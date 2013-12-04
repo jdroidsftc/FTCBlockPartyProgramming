@@ -18,8 +18,14 @@ task main()
 {
 	while(true)
 	{
-		motor[motorHang] = 50;
-		wait10Msec(100);
+		getJoystickSettings(joystick);
+		if(joy1Btn(7) == 1)
+		{
+			motor[motorHang] = -50;
+	  }
+
+
+
 	}
 
 
