@@ -121,7 +121,33 @@ task main()
 	bFloatDuringInactiveMotorPWM = true;
 		getJoystickSettings(joystick);
 
+		if(joy1Btn(2) == 1)
+		{
+			motor[motorRight] = 50;
+			motor[motorLeft] = 50;
+		}
+		else if(joy1Btn(3) == 1)
+		{
+			motor[motorRight] = -50;
+			motor[motorLeft] = -50;
+		}
+		else if(joy1Btn(8) == 1)
+		{
+			motor[motorLeft] = 45;
+			motor[motorRight] = -45;
+		}
+		else if(joy1Btn(7) == 1)
+		{
+			motor[motorRight] = 45;
+			motor[motorLeft] = -45;
+		}
+		else if( (joy1Btn(2) == 0) && (joy1Btn(3) == 0)&& (joy1Btn(6) == 0) && (joy1Btn(5) == 0) )
+		{
+			motor[motorRight] = 0;
+			motor[motorLeft] = 0;
+		}
 
+/*
 
 		//drive forward, backwards and turn
 		if (joy1Btn(2) == 1 ) //Drive Forward
@@ -183,7 +209,7 @@ task main()
 			}
 	  }
 
-
+*/
 
 
 	  ////sweeper actions
