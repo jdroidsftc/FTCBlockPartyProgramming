@@ -1,10 +1,10 @@
 #pragma config(Hubs,  S1, HTMotor,  HTServo,  HTMotor,  none)
 #pragma config(Sensor, S1,     ,               sensorI2CMuxController)
 #pragma config(Sensor, S2,     colorSensor,    sensorI2CHiTechnicColor)
-#pragma config(Motor,  mtr_S1_C1_1,     motorHang,     tmotorTetrix, openLoop)
+#pragma config(Motor,  mtr_S1_C1_1,     motorHang,     tmotorTetrix, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S1_C1_2,     motorArm,      tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S1_C3_1,     motorLeft,     tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S1_C3_2,     motorRight,    tmotorTetrix, openLoop, reversed)
+#pragma config(Motor,  mtr_S1_C3_1,     motorLeft,     tmotorTetrix, PIDControl, encoder)
+#pragma config(Motor,  mtr_S1_C3_2,     motorRight,    tmotorTetrix, PIDControl, reversed, encoder)
 #pragma config(Servo,  srvo_S1_C2_1,    servo1,               tServoNone)
 #pragma config(Servo,  srvo_S1_C2_2,    servo2,               tServoNone)
 #pragma config(Servo,  srvo_S1_C2_3,    servo3,               tServoNone)
@@ -102,6 +102,19 @@ int ScaleForMotor(int joyValue)
 
 task main()
 {
+		nMotorEncoder[motorHang] = 0;
+	nMotorEncoderTarget[motorHang] = 1440;
+	motor[motorHang] = 40;
+	int currentTicks = 0;
+	string sTemp;
+	while(nMotorRunState[motorHang] != runStateIdle)
+	{
+		currentTicks = nmotorEncoder[motorHang];
+		sprintf(sTemp, "%d", currentTicks);
+		nxtDisplayString(2, sTemp);
+	}
+	motor[motorRight] = 0;
+	/*
 
 
 	initializeRobot();
@@ -154,5 +167,5 @@ task main()
 
 
 	}
-
+*/
 }
