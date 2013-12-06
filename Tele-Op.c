@@ -118,133 +118,33 @@ task main()
 		////                                                   ////
 		///////////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////
-	bFloatDuringInactiveMotorPWM = true;
+		bFloatDuringInactiveMotorPWM = true;
 		getJoystickSettings(joystick);
 
-		if(joy1Btn(2) == 1)
+		switch(joystick.joy1_TopHat)
 		{
-			motor[motorRight] = 50;
-			motor[motorLeft] = 50;
+			case 0: //forward
+				motor[motorRight] = 50;
+				motor[motorLeft] = 50;
+				break;
+			case 4://backward
+				motor[motorRight] = -50;
+				motor[motorLeft] = -50;
+				break;
+			case 2://point turn left
+				motor[motorLeft] = 60;
+				motor[motorRight] = -60;
+				break;
+			case 6://point turn right
+				motor[motorRight] = 60;
+				motor[motorLeft] = -60;
+				break;
+			default://nothing pressed
+				motor[motorRight] = 0;
+				motor[motorLeft] = 0;
 		}
-		else if(joy1Btn(3) == 1)
-		{
-			motor[motorRight] = -50;
-			motor[motorLeft] = -50;
-		}
-		else if(joy1Btn(8) == 1)
-		{
-			motor[motorLeft] = 45;
-			motor[motorRight] = -45;
-		}
-		else if(joy1Btn(7) == 1)
-		{
-			motor[motorRight] = 45;
-			motor[motorLeft] = -45;
-		}
-		else if( (joy1Btn(2) == 0) && (joy1Btn(3) == 0)&& (joy1Btn(6) == 0) && (joy1Btn(5) == 0) )
-		{
-			motor[motorRight] = 0;
-			motor[motorLeft] = 0;
-		}
+	//	if(joy1Btn(
 
-/*
-
-		//drive forward, backwards and turn
-		if (joy1Btn(2) == 1 ) //Drive Forward
-		{
-	  	if (forwardSpeed == 0)
-			{
-				motor[motorLeft] = 10;
-				motor[motorRight] = 10;
-				forwardSpeed = 10;
-			} //forwardSpeed == 0
-			else
-			{
-				if(forwardSpeed != MAX_FORWARD_SPEED)
-				{
-			  	forwardSpeed = forwardSpeed + 10;
-					motor[motorLeft] = forwardSpeed;
-					motor[motorRight] = forwardSpeed;
-				}
-
-			}//else of forwardSpeed == 0
-
-		} //joy1Btn(2) == 1
-		else
-		{
-			forwardSpeed = 0;
-			if(joy1Btn(3) == 1) 	//Drive Backwards
-			{
-					forwardSpeed = 0;
-					if (backwardSpeed == 0)
-					{
-						motor[motorLeft] = -10;
-						motor[motorRight] = -10;
-						backwardSpeed = -10;
-					}
-					else
-					{
-						if(backwardSpeed != MAX_BACKWARD_SPEED)
-						{
-			  			backwardSpeed = backwardSpeed - 10;
-							motor[motorLeft] = backwardSpeed;
-							motor[motorRight] = backwardSpeed;
-						}
-					}
-			}
-			else
-			{
-				backwardSpeed = 0;
-				if(joy1Btn(5) == 1)
-				{
-					bFloatDuringInactiveMotorPWM = false;
-					motor[motorLeft] = 0;
-					motor[motorRight] = 0;
-				}
-				else
-				{ //we need to turn
-					motor[motorLeft] = ScaleForMotor(joystick.joy1_y1);
-					motor[motorRight] = ScaleForMotor(joystick.joy1_y2);
-				}
-			}
-	  }
-
-*/
-
-
-	  ////sweeper actions
-	  //if(joy1Btn(8) == 1){
-	  //	bFloatDuringInactiveMotorPWM = false;
-	  //	servo[servoSweeper] = 5;
-	  //}
-	  //else {
-	  //	if(joy1Btn(7) == 1){
-	  //		bFloatDuringInactiveMotorPWM = false;
-	  //		servo[servoSweeper] = -5;
-	  //	}
-	  //}
-
-	  //bFloatDuringInactiveMotorPWM = true;
-
-	  //Flag Motor
-	  /*
-	  if ( joy2Btn(2) == 1 )//A Button
-		{
-			motor[motorFlag] = 70;
-		}
-		if( joy2Btn(4) == 1 )//Y Button
-		{
-			motor[motorFlag] = 0;
-		}
-		if( joy2Btn(1) == 1 )
-		{
-			motor[motorFlag] = -50;
-		}
-		*/
 	}
 
 }
-
-/*
-task(
-*/
