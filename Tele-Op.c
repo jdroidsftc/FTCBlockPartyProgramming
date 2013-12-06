@@ -124,8 +124,8 @@ task main()
 		switch(joystick.joy1_TopHat)
 		{
 			case 0: //forward
-				motor[motorRight] = 50;
-				motor[motorLeft] = 50;
+				motor[motorRight] = 60;
+				motor[motorLeft] = 60;
 				break;
 			case 4://backward
 				motor[motorRight] = -50;
@@ -140,10 +140,18 @@ task main()
 				motor[motorLeft] = -60;
 				break;
 			default://nothing pressed
-				motor[motorRight] = 0;
-				motor[motorLeft] = 0;
+				if(joy1Btn(2) == 1)//move backward slowly
+				{
+					motor[motorRight] = -20;
+					motor[motorLeft] = -20;
+				}
+				else
+				{
+					motor[motorRight] = 0;
+					motor[motorLeft] = 0;
+				}
 		}
-	//	if(joy1Btn(
+
 
 	}
 
