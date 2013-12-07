@@ -1,11 +1,10 @@
 #pragma config(Hubs,  S1, HTMotor,  HTServo,  HTMotor,  none)
-#pragma config(Sensor, S1,     ,               sensorI2CMuxController)
 #pragma config(Sensor, S2,     colorSensor,    sensorI2CHiTechnicColor)
 #pragma config(Motor,  mtr_S1_C1_1,     motorHang,     tmotorTetrix, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S1_C1_2,     motorArm,      tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S1_C3_1,     motorLeft,     tmotorTetrix, PIDControl, encoder)
 #pragma config(Motor,  mtr_S1_C3_2,     motorRight,    tmotorTetrix, PIDControl, reversed, encoder)
-#pragma config(Servo,  srvo_S1_C2_1,    servo1,               tServoNone)
+#pragma config(Servo,  srvo_S1_C2_1,    servoScoop,           tServoStandard)
 #pragma config(Servo,  srvo_S1_C2_2,    servo2,               tServoNone)
 #pragma config(Servo,  srvo_S1_C2_3,    servo3,               tServoNone)
 #pragma config(Servo,  srvo_S1_C2_4,    servo4,               tServoNone)
@@ -40,14 +39,16 @@
 
   const int MAX_FORWARD_SPEED = 70;
   const int MAX_BACKWARD_SPEED = -70;
+  const int MAX_ENCODER_HANG = 27800;
   int forwardSpeed = 0;
   int backwardSpeed = 0;
+  int servoPosition = 0;
 
 void initializeRobot()
 {
 	// Place code here to sinitialize servos to starting positions.
-	//servo[servoClaw] = 0;
-
+	servo[servoScoop] = 0;
+	servoPosition = ServoValue[servoScoop];
 
 
   return;
@@ -71,7 +72,51 @@ int ScaleForMotor(int joyValue)
 }
 
 
+task armAndHang()
+{
+		//rack and pinion hanging mechanism
+		if(joy2Btn(3) == 1)
+		{
+			nMotorEncoder[motorHang] = 0;
+			nMotorEncoderTarget[motorHang] = MAX_ENCODER_HANG;
+			motor[motorHang] = 50;
+			while(nMotorRunState[motorHang] != runStateIdle)
+			{
+			}
+		}
+		else if( joy2Btn(2) == 1)
+		{
+			nMotorEncoder[motorHang] = 0;
+			nMotorEncoderTarget[motorHang] = -(MAX_ENCODER_HANG/3);
+			motor[motorHang] = -50;
+			while(nMotorRunState[motorHang] != runStateIdle)
+			{
+			}
+		}
 
+		//arm control
+		switch(joystick.joy2_TopHat)
+		{
+			case 0: //up
+				motor[motorArm] = 0;
+				break;
+			case 4: //down
+				motor[motorArm] = 0;
+				break;
+			default://nothing pressed
+				motor[motorArm] = 0;
+				//servo claw control
+				if(joy2Btn(1) == 1)
+				{
+					servoTarget[servoScoop] = ServoValue[servoScoop] + 5;
+				}
+				else if(joy2Btn(4) == 1)
+				{
+					servoTarget[servoScoop] = ServoValue[servoScoop] - 5;
+				}
+		}
+
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -102,26 +147,12 @@ int ScaleForMotor(int joyValue)
 
 task main()
 {
-		nMotorEncoder[motorHang] = 0;
-	nMotorEncoderTarget[motorHang] = 1440;
-	motor[motorHang] = 40;
-	int currentTicks = 0;
-	string sTemp;
-	while(nMotorRunState[motorHang] != runStateIdle)
-	{
-		currentTicks = nmotorEncoder[motorHang];
-		sprintf(sTemp, "%d", currentTicks);
-		nxtDisplayString(2, sTemp);
-	}
-	motor[motorRight] = 0;
-	/*
-
 
 	initializeRobot();
 
 
 	//waitForStart();   // wait for start of tele-op phase
-
+	//StartTask(armAndHang);
 	while (true)
 	{
 		///////////////////////////////////////////////////////////
@@ -162,10 +193,55 @@ task main()
 				{
 					motor[motorRight] = 0;
 					motor[motorLeft] = 0;
+
+					//rack and pinion hanging mechanism
+		if(joy2Btn(3) == 1)//B = up
+		{
+			nMotorEncoder[motorHang] = 0;
+			nMotorEncoderTarget[motorHang] = MAX_ENCODER_HANG;
+			motor[motorHang] = 50;
+			while( (nMotorRunState[motorHang] != runStateIdle) && (joy2Btn(6) != 1) ) //Right bumper is an emergency stop
+			{
+			}
+			motor[motorHang] = 0;
+		}
+		else if( joy2Btn(2) == 1)//A = down
+		{
+			nMotorEncoder[motorHang] = 0;
+			nMotorEncoderTarget[motorHang] = -(MAX_ENCODER_HANG/3);
+			motor[motorHang] = -50;
+			while((nMotorRunState[motorHang] != runStateIdle) && (joy2Btn(6) != 1) ) //Right bumper is an emergency stop
+			{
+			}
+			motor[motorHang] = 0;
+		}
+
+		//arm control
+		switch(joystick.joy2_TopHat)
+		{
+			case 0: //up
+				motor[motorArm] = 40;
+				break;
+			case 4: //down
+				motor[motorArm] = -40;
+				break;
+			default://nothing pressed
+				motor[motorArm] = 0;
+				//servo claw control
+				if(joy2Btn(1) == 1)
+				{
+					servo[servoScoop] = servoPosition - 1;
+					wait10Msec(20);
+				}
+				else if(joy2Btn(4) == 1)
+				{
+					servo[servoScoop] = servoPosition + 1;
+					wait10Msec(20);
+				}
+		}
 				}
 		}
 
+	} //while true
 
-	}
-*/
-}
+} // main
