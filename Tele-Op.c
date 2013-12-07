@@ -128,6 +128,9 @@ task main()
 
 		getJoystickSettings(joystick);
 
+		motor[motorRight] = ScaleForMotor( joystick.joy1_y1 );
+		motor[motorLeft] = ScaleForMotor( joystick.joy1_y2 );
+
 		//drive controls
 		if ( joystick.joy1_TopHat == 0 ) //forward
 		{
@@ -178,8 +181,8 @@ task main()
 		}
 		else
 		{
-					motor[motorRight] = 0;
-					motor[motorLeft] = 0;
+			motor[motorRight] = ScaleForMotor( joystick.joy1_y1 );
+			motor[motorLeft] = ScaleForMotor( joystick.joy1_y2 );
 		}
 
 
@@ -198,11 +201,11 @@ task main()
 		}
 
 		//flag control
-		if  (joy2Btn(8) == 1) //left trigger spin
+		if  (joy2Btn(8) == 1) //right trigger spin
 		{
 			motor[motorFlag] = 50;
 		}
-		else if  (joy2Btn(7) == 1) //right trigger stop
+		else if  (joy2Btn(7) == 1) //left trigger stop
 		{
 			motor[motorFlag] = 0;
 		}
