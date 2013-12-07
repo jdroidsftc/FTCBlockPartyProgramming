@@ -1,9 +1,12 @@
-#pragma config(Hubs,  S1, HTMotor,  HTServo,  HTMotor,  none)
+#pragma config(Hubs,  S1, HTMotor,  HTServo,  HTMotor,  HTMotor)
+#pragma config(Sensor, S1,     ,               sensorI2CMuxController)
 #pragma config(Sensor, S2,     colorSensor,    sensorI2CHiTechnicColor)
 #pragma config(Motor,  mtr_S1_C1_1,     motorHang,     tmotorTetrix, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S1_C1_2,     motorArm,      tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S1_C3_1,     motorLeft,     tmotorTetrix, PIDControl, encoder)
 #pragma config(Motor,  mtr_S1_C3_2,     motorRight,    tmotorTetrix, PIDControl, reversed, encoder)
+#pragma config(Motor,  mtr_S1_C4_1,     motorFlag,     tmotorTetrix, openLoop)
+#pragma config(Motor,  mtr_S1_C4_2,     motorI,        tmotorTetrix, openLoop)
 #pragma config(Servo,  srvo_S1_C2_1,    servoScoop,           tServoStandard)
 #pragma config(Servo,  srvo_S1_C2_2,    servo2,               tServoNone)
 #pragma config(Servo,  srvo_S1_C2_3,    servo3,               tServoNone)
@@ -37,11 +40,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  const int MAX_FORWARD_SPEED = 70;
-  const int MAX_BACKWARD_SPEED = -70;
-  const int MAX_ENCODER_HANG = 27800;
-  int forwardSpeed = 0;
-  int backwardSpeed = 0;
+const int MAX_ENCODER_HANG = 27800;
 
 void initializeRobot()
 {
@@ -98,7 +97,11 @@ task main()
 {
 
 	initializeRobot();
-
+	motor[motorRight] = 0;
+	motor[motorLeft] = 0;
+	motor[motorFlag] =0;
+	motor[motorHang] =0;
+	motor[motorArm] = 0;
 
 	while (true)
 	{
@@ -110,6 +113,7 @@ task main()
 		///////////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////
 		bFloatDuringInactiveMotorPWM = true;
+
 		getJoystickSettings(joystick);
 
 		//drive controls
@@ -133,7 +137,7 @@ task main()
 				motor[motorRight] = 60;
 				motor[motorLeft] = -60;
 		}
-		else if (joy1Btn(2) == 1)//move backward slowly
+		else if (joy1Btn(2) == 1)  //move backward slowly
 		{
 					motor[motorRight] = -20;
 					motor[motorLeft] = -20;
@@ -144,6 +148,7 @@ task main()
 					motor[motorLeft] = 0;
 		}
 
+
 		//worm gear arm control
 		if(joy2Btn(3) == 1) //B = up
 		{
@@ -153,15 +158,27 @@ task main()
 		{
 			motor[motorArm] = -40;
 		}
+
+		//flag control
+		else if  (joy2Btn(8) == 1) //Right spin
+		{
+			motor[motorFlag] = 30;
+		}
+		else if  (joy2Btn(7) == 1) //left is stop
+		{
+			motor[motorFlag] = 0;
+		}
+
 		//servo scoop control
 		else if(joy2Btn(1) == 1)
 		{
-					servo[servoScoop] = ServoValue[servoScoop] - 1;
+					servo[servoScoop] = ServoValue[servoScoop] - 2;
 		}
 		else if(joy2Btn(4) == 1)
 		{
-					servo[servoScoop] = ServoValue[servoScoop]  + 1;
+					servo[servoScoop] = ServoValue[servoScoop]  + 2;
 		}
+
 		//rack and pinion - hanging mechanism
 		else if (joystick.joy2_TopHat == 0 ) //up
 		{
@@ -187,6 +204,9 @@ task main()
 	  {
 			motor[motorArm] = 0;
 		}
+
+		//flag control
+
 
 	} //while true
 

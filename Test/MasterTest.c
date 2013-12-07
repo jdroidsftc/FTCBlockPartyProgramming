@@ -62,9 +62,9 @@ task main()
 		//uncomment the piece that you want tested.
 
 		//ArmUp();
-		ArmDown();
+		//ArmDown();
 		//RackUp();
-		//RackDown();
+		RackDown();
 		//ServoStart();
 		//ServoFlat();
 	}
