@@ -42,17 +42,12 @@
   const int MAX_ENCODER_HANG = 27800;
   int forwardSpeed = 0;
   int backwardSpeed = 0;
-  int servoPosition = 0;
 
 void initializeRobot()
 {
 	// Place code here to sinitialize servos to starting positions.
 	servo[servoScoop] = 0;
-	servoPosition = ServoValue[servoScoop];
-
-
   return;
-
 }
 
 int ScaleForMotor(int joyValue)
@@ -71,52 +66,6 @@ int ScaleForMotor(int joyValue)
 	return Scaled;
 }
 
-
-task armAndHang()
-{
-		//rack and pinion hanging mechanism
-		if(joy2Btn(3) == 1)
-		{
-			nMotorEncoder[motorHang] = 0;
-			nMotorEncoderTarget[motorHang] = MAX_ENCODER_HANG;
-			motor[motorHang] = 50;
-			while(nMotorRunState[motorHang] != runStateIdle)
-			{
-			}
-		}
-		else if( joy2Btn(2) == 1)
-		{
-			nMotorEncoder[motorHang] = 0;
-			nMotorEncoderTarget[motorHang] = -(MAX_ENCODER_HANG/3);
-			motor[motorHang] = -50;
-			while(nMotorRunState[motorHang] != runStateIdle)
-			{
-			}
-		}
-
-		//arm control
-		switch(joystick.joy2_TopHat)
-		{
-			case 0: //up
-				motor[motorArm] = 0;
-				break;
-			case 4: //down
-				motor[motorArm] = 0;
-				break;
-			default://nothing pressed
-				motor[motorArm] = 0;
-				//servo claw control
-				if(joy2Btn(1) == 1)
-				{
-					servoTarget[servoScoop] = ServoValue[servoScoop] + 5;
-				}
-				else if(joy2Btn(4) == 1)
-				{
-					servoTarget[servoScoop] = ServoValue[servoScoop] - 5;
-				}
-		}
-
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -151,8 +100,6 @@ task main()
 	initializeRobot();
 
 
-	//waitForStart();   // wait for start of tele-op phase
-	//StartTask(armAndHang);
 	while (true)
 	{
 		///////////////////////////////////////////////////////////
@@ -165,81 +112,80 @@ task main()
 		bFloatDuringInactiveMotorPWM = true;
 		getJoystickSettings(joystick);
 
-		switch(joystick.joy1_TopHat)
+		//drive controls
+		if ( joystick.joy1_TopHat == 0 ) //forward
 		{
-			case 0: //forward
 				motor[motorRight] = 60;
 				motor[motorLeft] = 60;
-				break;
-			case 4://backward
+		}
+		else if ( joystick.joy1_TopHat  == 4 )//backward
+		{
 				motor[motorRight] = -50;
 				motor[motorLeft] = -50;
-				break;
-			case 2://point turn left
+		}
+		else if ( joystick.joy1_TopHat  == 2 )//point turn left
+		{
 				motor[motorLeft] = 60;
 				motor[motorRight] = -60;
-				break;
-			case 6://point turn right
+		}
+		else if ( joystick.joy1_TopHat  == 6 ) //point turn right
+		{
 				motor[motorRight] = 60;
 				motor[motorLeft] = -60;
-				break;
-			default://nothing pressed
-				if(joy1Btn(2) == 1)//move backward slowly
-				{
+		}
+		else if (joy1Btn(2) == 1)//move backward slowly
+		{
 					motor[motorRight] = -20;
 					motor[motorLeft] = -20;
-				}
-				else
-				{
+		}
+		else
+		{
 					motor[motorRight] = 0;
 					motor[motorLeft] = 0;
-
-					//rack and pinion hanging mechanism
-		if(joy2Btn(3) == 1)//B = up
-		{
-			nMotorEncoder[motorHang] = 0;
-			nMotorEncoderTarget[motorHang] = MAX_ENCODER_HANG;
-			motor[motorHang] = 50;
-			while( (nMotorRunState[motorHang] != runStateIdle) && (joy2Btn(6) != 1) ) //Right bumper is an emergency stop
-			{
-			}
-			motor[motorHang] = 0;
-		}
-		else if( joy2Btn(2) == 1)//A = down
-		{
-			nMotorEncoder[motorHang] = 0;
-			nMotorEncoderTarget[motorHang] = -(MAX_ENCODER_HANG/3);
-			motor[motorHang] = -50;
-			while((nMotorRunState[motorHang] != runStateIdle) && (joy2Btn(6) != 1) ) //Right bumper is an emergency stop
-			{
-			}
-			motor[motorHang] = 0;
 		}
 
-		//arm control
-		switch(joystick.joy2_TopHat)
+		//worm gear arm control
+		if(joy2Btn(3) == 1) //B = up
 		{
-			case 0: //up
-				motor[motorArm] = 40;
-				break;
-			case 4: //down
-				motor[motorArm] = -40;
-				break;
-			default://nothing pressed
-				motor[motorArm] = 0;
-				//servo claw control
-				if(joy2Btn(1) == 1)
-				{
-					servo[servoScoop] = servoPosition - 1;
-					wait10Msec(20);
-				}
-				else if(joy2Btn(4) == 1)
-				{
-					servo[servoScoop] = servoPosition + 1;
-					wait10Msec(20);
-				}
+			motor[motorArm] = 40;
 		}
+		else if( joy2Btn(2) == 1) //A = down
+		{
+			motor[motorArm] = -40;
+		}
+		//servo scoop control
+		else if(joy2Btn(1) == 1)
+		{
+					servo[servoScoop] = ServoValue[servoScoop] - 1;
+		}
+		else if(joy2Btn(4) == 1)
+		{
+					servo[servoScoop] = ServoValue[servoScoop]  + 1;
+		}
+		//rack and pinion - hanging mechanism
+		else if (joystick.joy2_TopHat == 0 ) //up
+		{
+				nMotorEncoder[motorHang] = 0;
+				nMotorEncoderTarget[motorHang] = MAX_ENCODER_HANG;
+				motor[motorHang] = 50;
+				while( (nMotorRunState[motorHang] != runStateIdle) && (joy2Btn(6) != 1)  && (joy2Btn(5) != 1) ) //Right/left bumper is an emergency stop
+				{
 				}
+				motor[motorHang] = 0;
+	  }
+	  else if (joystick.joy2_TopHat == 4 ) //down
+	  {
+	  		nMotorEncoder[motorHang] = 0;
+				nMotorEncoderTarget[motorHang] = -(MAX_ENCODER_HANG/3);
+				motor[motorHang] = -50;
+				while((nMotorRunState[motorHang] != runStateIdle) && (joy2Btn(6) != 1)  && (joy2Btn(5) != 1) ) //Right/left bumper is an emergency stop
+				{
+				}
+				motor[motorHang] = 0;
+	  }
+	  else if ( joystick.joy2_TopHat == -1 )
+	  {
+			motor[motorArm] = 0;
 		}
 
 	} //while true
