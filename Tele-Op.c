@@ -49,6 +49,18 @@ void initializeRobot()
   return;
 }
 
+task raiseRack()
+{
+	getJoystickSettings(joystick);
+	nMotorEncoder[motorHang] = 0;
+	nMotorEncoderTarget[motorHang] = MAX_ENCODER_HANG;
+	motor[motorHang] = 50;
+	while( (nMotorRunState[motorHang] != runStateIdle) && (joy2Btn(6) != 1)  && (joy2Btn(5) != 1) ) //Right/left bumper is an emergency stop
+	{
+	}
+	motor[motorHang] = 0;
+}
+
 int ScaleForMotor(int joyValue)
 {
 	const int MIN_DEAD_ZONE = -7;
@@ -119,8 +131,8 @@ task main()
 		//drive controls
 		if ( joystick.joy1_TopHat == 0 ) //forward
 		{
-				motor[motorRight] = 60;
-				motor[motorLeft] = 60;
+				motor[motorRight] = 70;
+				motor[motorLeft] = 70;
 		}
 		else if ( joystick.joy1_TopHat  == 4 )//backward
 		{
@@ -132,15 +144,37 @@ task main()
 				motor[motorLeft] = 60;
 				motor[motorRight] = -60;
 		}
+		else if ( joystick.joy1_TopHat == 1 ) //swing right
+		{
+				motor[motorRight] = 20;
+				motor[motorLeft] = 60;
+		}
 		else if ( joystick.joy1_TopHat  == 6 ) //point turn right
 		{
 				motor[motorRight] = 60;
 				motor[motorLeft] = -60;
 		}
+		else if ( joystick.joy1_TopHat == 7 ) //swing left
+		{
+				motor[motorRight] = 60;
+				motor[motorLeft] = 20;
+		}
 		else if (joy1Btn(2) == 1)  //move backward slowly
 		{
 					motor[motorRight] = -20;
 					motor[motorLeft] = -20;
+		}
+		else if (joy1Btn(7) == 1) //ramp up
+		{
+					bFloatDuringInactiveMotorPWM = false;
+					motor[motorRight] = 30;
+					motor[motorLeft] = 30;
+		}
+		else if (joy1Btn(8) == 1) //ramp down
+		{
+					bFloatDuringInactiveMotorPWM = false;
+					motor[motorRight] = -30;
+					motor[motorLeft] = -30;
 		}
 		else
 		{
@@ -158,37 +192,35 @@ task main()
 		{
 			motor[motorArm] = -40;
 		}
+		else
+		{
+			motor[motorArm] = 0;
+		}
 
 		//flag control
-		else if  (joy2Btn(8) == 1) //Right spin
+		if  (joy2Btn(8) == 1) //left trigger spin
 		{
-			motor[motorFlag] = 30;
+			motor[motorFlag] = 50;
 		}
-		else if  (joy2Btn(7) == 1) //left is stop
+		else if  (joy2Btn(7) == 1) //right trigger stop
 		{
 			motor[motorFlag] = 0;
 		}
 
 		//servo scoop control
-		else if(joy2Btn(1) == 1)
+		if(joy2Btn(1) == 1) //X - scoop up
 		{
-					servo[servoScoop] = ServoValue[servoScoop] - 2;
+					servo[servoScoop] = ServoValue[servoScoop] + 2;
 		}
-		else if(joy2Btn(4) == 1)
+		else if(joy2Btn(4) == 1) //Y - scoop down
 		{
-					servo[servoScoop] = ServoValue[servoScoop]  + 2;
+					servo[servoScoop] = ServoValue[servoScoop]  - 2;
 		}
 
 		//rack and pinion - hanging mechanism
 		else if (joystick.joy2_TopHat == 0 ) //up
 		{
-				nMotorEncoder[motorHang] = 0;
-				nMotorEncoderTarget[motorHang] = MAX_ENCODER_HANG;
-				motor[motorHang] = 50;
-				while( (nMotorRunState[motorHang] != runStateIdle) && (joy2Btn(6) != 1)  && (joy2Btn(5) != 1) ) //Right/left bumper is an emergency stop
-				{
-				}
-				motor[motorHang] = 0;
+				StartTask(raiseRack);
 	  }
 	  else if (joystick.joy2_TopHat == 4 ) //down
 	  {
@@ -200,10 +232,6 @@ task main()
 				}
 				motor[motorHang] = 0;
 	  }
-	  else if ( joystick.joy2_TopHat == -1 )
-	  {
-			motor[motorArm] = 0;
-		}
 
 		//flag control
 
