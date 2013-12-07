@@ -72,7 +72,7 @@ int ScaleForMotor(int joyValue)
 		return 0;
 
 	int direction = joyValue/abs(joyValue);
-	float ratio = ((joyValue * joyValue)*(joyValue * joyValue) / (MAX_JOY_VAL * MAX_JOY_VAL)*(MAX_JOY_VAL * MAX_JOY_VAL));
+	float ratio = ((joyValue * joyValue) / (MAX_JOY_VAL * MAX_JOY_VAL));
 	int Scaled = ratio * MAX_MOTOR_VAL * direction;
 	return Scaled;
 }
