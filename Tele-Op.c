@@ -51,14 +51,14 @@ void initializeRobot()
 
 task raiseRack()
 {
-	getJoystickSettings(joystick);
-	nMotorEncoder[motorHang] = 0;
-	nMotorEncoderTarget[motorHang] = MAX_ENCODER_HANG;
-	motor[motorHang] = 50;
-	while( (nMotorRunState[motorHang] != runStateIdle) && (joy2Btn(6) != 1)  && (joy2Btn(5) != 1) ) //Right/left bumper is an emergency stop
-	{
-	}
-	motor[motorHang] = 0;
+		getJoystickSettings(joystick);
+		nMotorEncoder[motorHang] = 0;
+		nMotorEncoderTarget[motorHang] = MAX_ENCODER_HANG;
+		motor[motorHang] = 50;
+		while( (nMotorRunState[motorHang] != runStateIdle) && (joy2Btn(6) != 1)  && (joy2Btn(5) != 1) ) //Right/left bumper is an emergency stop
+		{
+		}
+		motor[motorHang] = 0;
 }
 
 int ScaleForMotor(int joyValue)
@@ -77,6 +77,65 @@ int ScaleForMotor(int joyValue)
 	return Scaled;
 }
 
+
+int ScaleForServo(int joyValue)
+{
+
+	const int MIN_DEAD_ZONE = -7;
+	const int MAX_DEAD_ZONE = 7;
+	const int MAX_SERVOVAL  = 255;
+	const float MAX_JOY_VAL = 127;
+
+	if ( joyValue < MAX_DEAD_ZONE && joyValue > MIN_DEAD_ZONE)
+		return 0;
+
+	int direction = joyValue/abs(joyValue);
+	float ratio = ((joyValue * joyValue) / (MAX_JOY_VAL * MAX_JOY_VAL));
+	int Scaled = ratio * MAX_SERVOVAL * direction;
+	return Scaled;
+}
+
+
+task Arm()
+{
+	while(true)
+	{
+		getJoystickSettings(joystick);
+		motor[motorArm] = ScaleForMotor(joystick.joy2_y2);
+	}
+}
+
+task Scoop()
+{
+	const int MIN_DEAD_ZONE = -7;
+	const int MAX_DEAD_ZONE = 7;
+	const int MAX_SERVOVAL  = 255;
+	const float MAX_JOY_VAL = 127;
+	int LastValue = 0;
+	while ( 1)
+	{
+
+		getJoystickSettings(joystick);
+		int joyValue = joystick.joy2_y1;
+		if ( joyValue < MAX_DEAD_ZONE && joyValue > MIN_DEAD_ZONE)
+				servo[servoScoop] = ServoValue[servoScoop];
+		else
+		{
+			int direction = joyValue/abs(joyValue);
+			float ratio = ((joyValue * joyValue) / (MAX_JOY_VAL * MAX_JOY_VAL));
+			int Scaled = ratio * MAX_SERVOVAL * direction;
+
+			if(LastValue < Scaled )
+			{
+				servo[servoScoop] = ServoValue[servoScoop]  - 2;
+			}
+			else
+			{
+				servo[servoScoop] = ServoValue[servoScoop]  + 2;
+			}
+		}
+	}
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -115,6 +174,9 @@ task main()
 	motor[motorHang] =0;
 	motor[motorArm] = 0;
 
+	StartTask(Arm);
+	StartTask(Scoop);
+
 	while (true)
 	{
 		///////////////////////////////////////////////////////////
@@ -124,6 +186,7 @@ task main()
 		////                                                   ////
 		///////////////////////////////////////////////////////////
 		///////////////////////////////////////////////////////////
+
 		bFloatDuringInactiveMotorPWM = true;
 
 		getJoystickSettings(joystick);
@@ -184,7 +247,8 @@ task main()
 		}
 
 
-		//worm gear arm control
+
+/*		//worm gear arm control
 		if(joy2Btn(3) == 1) //B = up
 		{
 			motor[motorArm] = 40;
@@ -197,7 +261,7 @@ task main()
 		{
 			motor[motorArm] = 0;
 		}
-
+*/
 		//flag control
 		if  (joy2Btn(8) == 1) //right trigger spin
 		{
@@ -207,7 +271,7 @@ task main()
 		{
 			motor[motorFlag] = 0;
 		}
-
+/*
 		//servo scoop control
 		if(joy2Btn(1) == 1) //X - scoop up
 		{
@@ -217,6 +281,7 @@ task main()
 		{
 					servo[servoScoop] = ServoValue[servoScoop]  - 2;
 		}
+		*/
 
 		//rack and pinion - hanging mechanism
 		else if (joystick.joy2_TopHat == 0 ) //up
@@ -226,7 +291,7 @@ task main()
 	  else if (joystick.joy2_TopHat == 4 ) //down
 	  {
 	  		nMotorEncoder[motorHang] = 0;
-				nMotorEncoderTarget[motorHang] = -(MAX_ENCODER_HANG/3);
+				nMotorEncoderTarget[motorHang] = -(MAX_ENCODER_HANG/2);
 				motor[motorHang] = -50;
 				while((nMotorRunState[motorHang] != runStateIdle) && (joy2Btn(6) != 1)  && (joy2Btn(5) != 1) ) //Right/left bumper is an emergency stop
 				{

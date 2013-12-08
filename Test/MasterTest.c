@@ -63,8 +63,8 @@ task main()
 
 		//ArmUp();
 		//ArmDown();
-		RackUp();
-		//RackDown();
+		//RackUp();
+		RackDown();
 		//ServoStart();
 		//ServoFlat();
 	}
