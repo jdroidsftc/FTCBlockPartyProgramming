@@ -128,8 +128,6 @@ task main()
 
 		getJoystickSettings(joystick);
 
-		motor[motorRight] = ScaleForMotor( joystick.joy1_y1 );
-		motor[motorLeft] = ScaleForMotor( joystick.joy1_y2 );
 
 		//drive controls
 		if ( joystick.joy1_TopHat == 0 ) //forward
@@ -181,8 +179,8 @@ task main()
 		}
 		else
 		{
-			motor[motorRight] = ScaleForMotor( joystick.joy1_y1 );
-			motor[motorLeft] = ScaleForMotor( joystick.joy1_y2 );
+			motor[motorLeft] = ScaleForMotor( joystick.joy1_y1 );
+			motor[motorRight] = ScaleForMotor( joystick.joy1_y2 );
 		}
 
 
