@@ -60,11 +60,11 @@ task main()
 		getJoystickSettings(joystick);
 
 		//uncomment the piece that you want tested.
-
+		//servo[servoScoop]  = 100;
 		//ArmUp();
-		//ArmDown();
+		ArmDown();
 		//RackUp();
-		RackDown();
+		//RackDown();
 		//ServoStart();
 		//ServoFlat();
 	}

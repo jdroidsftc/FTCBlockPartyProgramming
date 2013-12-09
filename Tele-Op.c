@@ -49,6 +49,11 @@ void initializeRobot()
   return;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// Raise the Rack Task
+// raise the rack nased on the predefined encoder value.
+// left and right bumper stops the rack from climbing up or down.
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 task raiseRack()
 {
 		getJoystickSettings(joystick);
@@ -61,11 +66,15 @@ task raiseRack()
 		motor[motorHang] = 0;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// scale for the drive motors
+// the joy stick value should be scaled from 0 to maximum motor value
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 int ScaleForMotor(int joyValue)
 {
 	const int MIN_DEAD_ZONE = -7;
 	const int MAX_DEAD_ZONE = 7;
-	const int MAX_MOTOR_VAL = 85;
+	const int MAX_MOTOR_VAL = 70;
 	const float MAX_JOY_VAL = 127;
 
 	if ( joyValue < MAX_DEAD_ZONE && joyValue > MIN_DEAD_ZONE)
@@ -77,25 +86,11 @@ int ScaleForMotor(int joyValue)
 	return Scaled;
 }
 
-
-int ScaleForServo(int joyValue)
-{
-
-	const int MIN_DEAD_ZONE = -7;
-	const int MAX_DEAD_ZONE = 7;
-	const int MAX_SERVOVAL  = 255;
-	const float MAX_JOY_VAL = 127;
-
-	if ( joyValue < MAX_DEAD_ZONE && joyValue > MIN_DEAD_ZONE)
-		return 0;
-
-	int direction = joyValue/abs(joyValue);
-	float ratio = ((joyValue * joyValue) / (MAX_JOY_VAL * MAX_JOY_VAL));
-	int Scaled = ratio * MAX_SERVOVAL * direction;
-	return Scaled;
-}
-
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// Arm Task
+// starts when the program starts
+// allows for the arm to be controlled along with driving
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 task Arm()
 {
 	while(true)
@@ -105,6 +100,13 @@ task Arm()
 	}
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// Scoop Task
+// Allows for the scoop to be controlled parallely,
+// independent of teh arm and drive controls
+// servo should scale from 0 to 255
+// the value should be increased and decreased based on the joy stick value
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 task Scoop()
 {
 	const int MIN_DEAD_ZONE = -7;
@@ -114,7 +116,6 @@ task Scoop()
 	int LastValue = 0;
 	while ( 1)
 	{
-
 		getJoystickSettings(joystick);
 		int joyValue = joystick.joy2_y1;
 		if ( joyValue < MAX_DEAD_ZONE && joyValue > MIN_DEAD_ZONE)
@@ -174,9 +175,13 @@ task main()
 	motor[motorHang] =0;
 	motor[motorArm] = 0;
 
+	//multi tasking thread for arm
 	StartTask(Arm);
+
+	//multi tasking thread for scoop
 	StartTask(Scoop);
 
+	//main thread for drive and flag
 	while (true)
 	{
 		///////////////////////////////////////////////////////////
@@ -286,6 +291,7 @@ task main()
 		//rack and pinion - hanging mechanism
 		else if (joystick.joy2_TopHat == 0 ) //up
 		{
+				//multi threaded task to raise the arm,should start raising as soong as the flag is done
 				StartTask(raiseRack);
 	  }
 	  else if (joystick.joy2_TopHat == 4 ) //down
@@ -298,9 +304,6 @@ task main()
 				}
 				motor[motorHang] = 0;
 	  }
-
-		//flag control
-
 
 	} //while true
 
