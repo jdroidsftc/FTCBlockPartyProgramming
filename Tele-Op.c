@@ -54,16 +54,32 @@ void initializeRobot()
 // raise the rack nased on the predefined encoder value.
 // left and right bumper stops the rack from climbing up or down.
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-task raiseRack()
+task Rack()
 {
+	while(true)
+	{
 		getJoystickSettings(joystick);
-		nMotorEncoder[motorHang] = 0;
-		nMotorEncoderTarget[motorHang] = MAX_ENCODER_HANG;
-		motor[motorHang] = 50;
-		while( (nMotorRunState[motorHang] != runStateIdle) && (joy2Btn(6) != 1)  && (joy2Btn(5) != 1) ) //Right/left bumper is an emergency stop
+		if (joystick.joy2_TopHat == 0 )//up
 		{
+			nMotorEncoder[motorHang] = 0;
+			nMotorEncoderTarget[motorHang] = MAX_ENCODER_HANG;
+			motor[motorHang] = 50;
+			while( (nMotorRunState[motorHang] != runStateIdle) && (joy2Btn(6) != 1)  && (joy2Btn(5) != 1) ) //Right/left bumper is an emergency stop
+			{
+			}
+			motor[motorHang] = 0;
 		}
-		motor[motorHang] = 0;
+		else if(joystick.joy2_TopHat == 4 ) //down
+	  {
+	  	nMotorEncoder[motorHang] = 0;
+			nMotorEncoderTarget[motorHang] = -(MAX_ENCODER_HANG/2);
+			motor[motorHang] = -50;
+			while((nMotorRunState[motorHang] != runStateIdle) && (joy2Btn(6) != 1)  && (joy2Btn(5) != 1) ) //Right/left bumper is an emergency stop
+			{
+			}
+			motor[motorHang] = 0;
+	  }
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -181,6 +197,9 @@ task main()
 	//multi tasking thread for scoop
 	StartTask(Scoop);
 
+	//multi threaded task to control the rack and pinion
+	StartTask(Rack);
+
 	//main thread for drive and flag
 	while (true)
 	{
@@ -286,7 +305,6 @@ task main()
 		{
 					servo[servoScoop] = ServoValue[servoScoop]  - 2;
 		}
-		*/
 
 		//rack and pinion - hanging mechanism
 		else if (joystick.joy2_TopHat == 0 ) //up
@@ -304,7 +322,7 @@ task main()
 				}
 				motor[motorHang] = 0;
 	  }
-
+*/
 	} //while true
 
 } // main
