@@ -26,7 +26,7 @@ void ArmDown()
 
 void ArmUp()
 {
-		motor[motorArm] = 30;
+		motor[motorArm] = 80;
 		wait10Msec(10);
 }
 
@@ -57,12 +57,25 @@ task main()
 {
 	while(true)
 	{
+		servo[servoScoop]  = 0;
 		getJoystickSettings(joystick);
-
+		if(joy1Btn(4) == 1)
+			ArmUp();
+		else if(joy1Btn(2) == 1)
+			ArmDown();
+		else if (joystick.joy1_TopHat == 0)
+			RackUp();
+		else if (joystick.joy1_TopHat == 4)
+			RackDown();
+		else
+		{
+			motor[motorHang] = 0;
+			motor[motorArm] = 0;
+		}
 		//uncomment the piece that you want tested.
 		//servo[servoScoop]  = 100;
 		//ArmUp();
-		ArmDown();
+		//ArmDown();
 		//RackUp();
 		//RackDown();
 		//ServoStart();

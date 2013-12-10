@@ -40,7 +40,7 @@ const int WHEEL_DIAMETER = 4;  			// current wheel diameter = 4 inches
 const float PI = 3.14159265359;
 
 //should find the fourth basket within 45 inches from the start position
-const int BASKET_ZONE4_MAX  = (ONE_REVOLUTION/(PI * WHEEL_DIAMETER)) * -45 ;
+const int BASKET_ZONE4_MAX  = (ONE_REVOLUTION/(PI * WHEEL_DIAMETER)) * 45 ;
 
 
 #include "JoystickDriver.c"  							//Include file to "handle" the Bluetooth messages.
@@ -78,6 +78,33 @@ void TurnRight()
 }
 
 
+
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// TurnRight Backwards
+//
+//////////////////////////////////////////////////////////////////////////////////////
+void TurnLeft()
+{
+		nMotorEncoder[motorRight] = 0;
+		nMotorEncoder[motorLeft] = 0;
+
+		nMotorEncoderTarget[motorRight] = 3500;
+		nMotorEncoderTarget[motorLeft] = 0;
+
+		motor[motorRight] = 70;
+		motor[motorLeft] = 0;
+
+		while(nMotorRunState[motorRight] != runStateIdle)
+		{
+		}
+
+		motor[motorRight] = 0;
+		motor[motorLeft] = 0;
+
+}
+
+
 //////////////////////////////////////////////////////////////////////////////////////
 //
 // SwingTurnLeft
@@ -90,8 +117,8 @@ void SwingTurnLeft()
 		nMotorEncoder[motorRight] = 0;
 		nMotorEncoder[motorLeft] = 0;
 
-		nMotorEncoderTarget[motorRight] = 1400;
-		nMotorEncoderTarget[motorLeft] = 1400;
+		nMotorEncoderTarget[motorRight] = 1800;
+		nMotorEncoderTarget[motorLeft] = 1800;
 
 		motor[motorRight] = 30;
 		motor[motorLeft] = -30;
@@ -113,8 +140,8 @@ void SwingTurnRight()
 		nMotorEncoder[motorRight] = 0;
 		nMotorEncoder[motorLeft] = 0;
 
-		nMotorEncoderTarget[motorRight] = 1400;
-		nMotorEncoderTarget[motorLeft] = 1400;
+		nMotorEncoderTarget[motorRight] = 1800;
+		nMotorEncoderTarget[motorLeft] = 1800;
 
 		motor[motorRight] = -30;
 		motor[motorLeft] = 30;
@@ -137,8 +164,8 @@ void SwingTurnLeftRamp()
 		nMotorEncoder[motorRight] = 0;
 		nMotorEncoder[motorLeft] = 0;
 
-		nMotorEncoderTarget[motorRight] = 1400;
-		nMotorEncoderTarget[motorLeft] = 1400;
+		nMotorEncoderTarget[motorRight] = 2500;
+		nMotorEncoderTarget[motorLeft] = 2500;
 
 		motor[motorRight] = 30;
 		motor[motorLeft] = -30;
@@ -212,7 +239,7 @@ int  MoveUntilIR()
 		currentTicks = nMotorEncoder[motorRight];
 
 		// check to see if we are past the 4th basket
-		if (currentTicks <= BASKET_ZONE4_MAX )
+		if (currentTicks >= BASKET_ZONE4_MAX )
 		{
 	  	//IR Seeker did not detect the IR beam, we are way past the 4th basket,
 	    //need to stop moving
@@ -238,39 +265,34 @@ int  MoveUntilIR()
 //Drop Block NEW
 void DropBlock()
 {
-	SwingTurnLeft();
-	wait1Msec(10);
-
-	Move(8, BACKWARD, 35);
-	wait1Msec(10);
-	motor[motorArm] = 30;
-	wait10Msec(200);
-	while(true)
-	{
-	}
-	servo[servoScoop] = 110;
-	servo[servoScoop] = 5;
 	Move(2, FORWARD, 35);
+	wait1Msec(10);
+
+	SwingTurnLeft();
+	wait1Msec(5);
+
+	Move(2, BACKWARD, 35);
+
+	motor[motorArm] = 40;
+	wait10Msec(75);
+
+	servo[servoScoop] = 90;
+
+	motor[motorArm] = 40;
+	wait10Msec(243);
+	motor[motorArm] = 0;
+
+	Move(6, FORWARD, 35);
+	wait1Msec(10);
+
+	servo[servoScoop] = 255;
+	wait10Msec(125);
+
+	servo[servoScoop] = 0;
+	wait10Msec(50);
 }
 
-/*
-void DropBlock()
-{
-	  Move(4,FORWARD, 20);
-    wait1Msec(10);
-  //Swing Turn into the Basket, to position the robot for dropping the block
-    SwingTurnLeft();
-	  wait1Msec(10);
-	//Move closer to the robot
-	  Move(6,BACKWARD, 35);
-	  wait1Msec(10);
-	//Drop the block, hopefully, into the basket
-	  //servo[servoClaw] = 110;
-	  wait1Msec(1000);
-	  //servo[servoClaw] = 5;
-	  Move(2,FORWARD,35);
-}
-*/
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //                                         Main Task
@@ -317,7 +339,7 @@ task main()
  	// returns the number of ticks moved
  	//
  	///////////////////////////////////////////////////////
- 	int currentTicks = MoveUntilIR();
+	int currentTicks = MoveUntilIR();
   wait10Msec(30);
 
   ///////////////////////////////////////////////////////
@@ -333,8 +355,6 @@ task main()
   //okay, Now what?! Backup from basket
   //
   ///////////////////////////////////////////////////////
-  Move(1, FORWARD, 40);
-  wait10Msec(30);
   SwingTurnRight();
 
 
@@ -347,8 +367,8 @@ task main()
 
   nMotorEncoder[motorLeft] = 0;
   nMotorEncoder[motorRight]= 0;
-  nMotorEncoderTarget[motorLeft] =  (currentTicks * -1)-1150;
-  nMotorEncoderTarget[motorRight] =  (currentTicks * -1)-1150;
+  nMotorEncoderTarget[motorLeft] =  (currentTicks * -1)  + 475;
+  nMotorEncoderTarget[motorRight] =  (currentTicks * -1) + 475;
 
   motor[motorLeft] = -40;
   motor[motorRight] = -40;
@@ -370,18 +390,18 @@ task main()
 	wait10Msec(20);
 
 	//Find the Blue or RED line
-	MoveUntilBlueOrRed();
+	Move(45, FORWARD, 40);
 	wait10Msec(20);
 
 	//postion towards the ramp
-	TurnRight();
+	TurnLeft();
 	wait10Msec(30);
 
 	//brakes so that robot does not slide down ramp
 	bFloatDuringInactiveMotorPWM = false;
 
 	//climb the ramp
-	Move(27,FORWARD,60);
+	Move(35,BACKWARD,60);
 
 	///////////////////////////////////////////////////////
   //

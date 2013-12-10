@@ -47,12 +47,12 @@ void Move(int distance, int direction, int power)
 
 		//4. set the power based on direction forward or backward
 		if(direction == FORWARD){
-			motor[motorRight] = power * -1;
-			motor[motorLeft] = power * -1 ;
-		}
-		else{
 			motor[motorRight] = power;
 			motor[motorLeft] = power;
+		}
+		else{
+			motor[motorRight] = power * -1;
+			motor[motorLeft] = power * -1;
 		}
 
 		//5. check motor state to to keep running, if idle breaks out of while loop
@@ -74,12 +74,10 @@ void Move(int distance, int direction, int power)
 //////////////////////////////////////////////////////////////////////////////////////
 void MoveUntilBlueOrRed()
 {
-	nMotorEncoder[motorRight] = 0;
-	nMotorEncoder[motorLeft] = 0;
 	motor[motorRight] = 35;
 	motor[motorLeft] = 35;
 
-	while( ( (SensorValue[S2] != BLUECOLOR) && (SensorValue[S2] != REDCOLOR) ) || ( (nMotorEncoder[motorRight] == 3500) && (nMotorEncoder[motorLeft] == 3500) ) )
+	while(  SensorValue[S2] != BLUECOLOR && SensorValue[S2] != REDCOLOR )
 	{
 		//The motor continues running at -35 speed until the sensor does not detect EITHER red and blue OR it goes far
 	}
