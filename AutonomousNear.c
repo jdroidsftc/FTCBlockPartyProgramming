@@ -89,11 +89,11 @@ void TurnLeft()
 		nMotorEncoder[motorRight] = 0;
 		nMotorEncoder[motorLeft] = 0;
 
-		nMotorEncoderTarget[motorRight] = 3500;
-		nMotorEncoderTarget[motorLeft] = 0;
+		nMotorEncoderTarget[motorRight] = 1800;
+		nMotorEncoderTarget[motorLeft] = 1800;
 
-		motor[motorRight] = 70;
-		motor[motorLeft] = 0;
+		motor[motorRight] = 30;
+		motor[motorLeft] = -30;
 
 		while(nMotorRunState[motorRight] != runStateIdle)
 		{
@@ -117,11 +117,11 @@ void SwingTurnLeft()
 		nMotorEncoder[motorRight] = 0;
 		nMotorEncoder[motorLeft] = 0;
 
-		nMotorEncoderTarget[motorRight] = 1800;
-		nMotorEncoderTarget[motorLeft] = 1800;
+		nMotorEncoderTarget[motorRight] = 2000;//USED IN TWO SPOTS
+		nMotorEncoderTarget[motorLeft] = 2000;
 
-		motor[motorRight] = 30;
-		motor[motorLeft] = -30;
+		motor[motorRight] = 50;
+		motor[motorLeft] = -50;
 
 		while(nMotorRunState[motorRight] != runStateIdle || nMotorRunState[motorLeft] != runStateIdle)
 		{
@@ -140,11 +140,11 @@ void SwingTurnRight()
 		nMotorEncoder[motorRight] = 0;
 		nMotorEncoder[motorLeft] = 0;
 
-		nMotorEncoderTarget[motorRight] = 1800;
-		nMotorEncoderTarget[motorLeft] = 1800;
+		nMotorEncoderTarget[motorRight] = 2000;
+		nMotorEncoderTarget[motorLeft] = 2000;
 
-		motor[motorRight] = -30;
-		motor[motorLeft] = 30;
+		motor[motorRight] = -60;
+		motor[motorLeft] = 60;
 
 		while(nMotorRunState[motorRight] != runStateIdle || nMotorRunState[motorLeft] != runStateIdle)
 		{
@@ -164,8 +164,8 @@ void SwingTurnLeftRamp()
 		nMotorEncoder[motorRight] = 0;
 		nMotorEncoder[motorLeft] = 0;
 
-		nMotorEncoderTarget[motorRight] = 2500;
-		nMotorEncoderTarget[motorLeft] = 2500;
+		nMotorEncoderTarget[motorRight] = 2300;
+		nMotorEncoderTarget[motorLeft] = 2300;
 
 		motor[motorRight] = 30;
 		motor[motorLeft] = -30;
@@ -219,8 +219,8 @@ int  MoveUntilIR()
 	nMotorEncoder[motorLeft] = 0;
 
 	//2. Start the motors
-	motor[motorRight] = 35;
-	motor[motorLeft] = 35;
+	motor[motorRight] = 45;
+	motor[motorLeft] = 45;
 
 	//3. Set the variables to track the numbe of revolutions, so robot knows its position on the field
 	int currentTicks = 0;
@@ -265,31 +265,30 @@ int  MoveUntilIR()
 //Drop Block NEW
 void DropBlock()
 {
-	Move(2, FORWARD, 35);
+	Move(7, FORWARD, 35);
 	wait1Msec(10);
 
 	SwingTurnLeft();
 	wait1Msec(5);
 
-	Move(2, BACKWARD, 35);
+	Move(3, BACKWARD, 35);
 
 	motor[motorArm] = 40;
 	wait10Msec(75);
 
-	servo[servoScoop] = 90;
+	servo[servoScoop] = 100;
 
 	motor[motorArm] = 40;
 	wait10Msec(243);
 	motor[motorArm] = 0;
 
-	Move(6, FORWARD, 35);
+	Move(7, FORWARD, 35);
 	wait1Msec(10);
 
 	servo[servoScoop] = 255;
 	wait10Msec(125);
 
 	servo[servoScoop] = 0;
-	wait10Msec(50);
 }
 
 
@@ -340,7 +339,7 @@ task main()
  	//
  	///////////////////////////////////////////////////////
 	int currentTicks = MoveUntilIR();
-  wait10Msec(30);
+  wait10Msec(10);
 
   ///////////////////////////////////////////////////////
   //
@@ -367,17 +366,17 @@ task main()
 
   nMotorEncoder[motorLeft] = 0;
   nMotorEncoder[motorRight]= 0;
-  nMotorEncoderTarget[motorLeft] =  (currentTicks * -1)  + 475;
-  nMotorEncoderTarget[motorRight] =  (currentTicks * -1) + 475;
+  nMotorEncoderTarget[motorLeft] =  (currentTicks * -1)  + 1000;
+  nMotorEncoderTarget[motorRight] =  (currentTicks * -1) + 1000;
 
-  motor[motorLeft] = -40;
-  motor[motorRight] = -40;
+  motor[motorLeft] = -60;
+  motor[motorRight] = -60;
   while ( nMotorRunState[motorLeft] != runStateIdle || nMotorRunState[motorRight] != runStateIdle)
   {
   }
   motor[motorLeft] = 0;
   motor[motorRight] = 0;
-  wait10Msec(20);
+  wait10Msec(10);
 
   ///////////////////////////////////////////////////////
   //
@@ -387,21 +386,21 @@ task main()
 
 	//turnleft towards the ramp
 	SwingTurnLeftRamp();
-	wait10Msec(20);
+	wait10Msec(10);
 
 	//Find the Blue or RED line
-	Move(45, FORWARD, 40);
-	wait10Msec(20);
+	Move(48, FORWARD, 60);
+	wait10Msec(10);
 
 	//postion towards the ramp
-	TurnLeft();
-	wait10Msec(30);
+	SwingTurnLeft();
+	wait10Msec(10);
 
 	//brakes so that robot does not slide down ramp
 	bFloatDuringInactiveMotorPWM = false;
 
 	//climb the ramp
-	Move(35,BACKWARD,60);
+	Move(25,BACKWARD,60);
 
 	///////////////////////////////////////////////////////
   //
