@@ -150,6 +150,7 @@ task Arm()
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 task Scoop()
 {
+	/*
 	const int MIN_DEAD_ZONE = -7;
 	const int MAX_DEAD_ZONE = 7;
 	const int MAX_SERVOVAL  = 255;
@@ -178,6 +179,18 @@ task Scoop()
 			{
 				servo[servoScoop] = ServoValue[servoScoop]  + 2;
 			}
+		*/
+
+		if(joy2Btn(1) == 1)  //pick up position
+		{
+			servo[servoScoop] = 180;
+		}
+
+		if(joy2Btn(1) == 1)  //drop position
+		{
+			servo[servoScoop] = 250;
+		}
+
 
 		} // else
 
@@ -218,8 +231,8 @@ task main()
 	initializeRobot();
 	motor[motorRight] = 0;
 	motor[motorLeft] = 0;
-	motor[motorFlag] =0;
-	motor[motorHang] =0;
+	motor[motorFlag] = 0;
+	motor[motorHang] = 0;
 	motor[motorArm] = 0;
 
 	//multi tasking thread for arm

@@ -85,5 +85,6 @@ task main()
 		//RackDown();
 		//ServoStart();
 		//ServoFlat();
+		//servo[servoScoop] = 180;
 	}
 }
