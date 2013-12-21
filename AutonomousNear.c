@@ -40,15 +40,15 @@ const int WHEEL_DIAMETER = 4;  			// current wheel diameter = 4 inches
 const float PI = 3.14159265359;
 
 //should find the fourth basket within 45 inches from the start position
-const int BASKET_ZONE4_MAX  = (ONE_REVOLUTION/(PI * WHEEL_DIAMETER)) * 45 ;
-
+const int BASKET_ZONE4_MAX  = (ONE_REVOLUTION/(PI * WHEEL_DIAMETER)) * 50 ;
+const int BASKET_ZONE3_MAX = (ONE_REVOLUTION/(PI * WHEEL_DIAMETER)) * 45;
+const int MAX_RACK_RISE = 2000;
 
 #include "JoystickDriver.c"  							//Include file to "handle" the Bluetooth messages.
 #include "Drivers/Common.h"
 #include "Drivers/hitechnic-colour-v2.h"
 #include "Drivers/hitechnic-irseeker-v2.h"
 #include "JDroidsHelperFunctions.c"				//Include file to "handle" JDroids functions.
-
 
 
 
@@ -81,7 +81,7 @@ void TurnRight()
 
 //////////////////////////////////////////////////////////////////////////////////////
 //
-// TurnRight Backwards
+// TurnLeft
 //
 //////////////////////////////////////////////////////////////////////////////////////
 void TurnLeft()
@@ -108,16 +108,15 @@ void TurnLeft()
 //////////////////////////////////////////////////////////////////////////////////////
 //
 // SwingTurnLeft
-// Used in two places
-// 	1. when turned towards the basket
-//  2. when turned towards the ramp
+// when turned towards the basket
+//
 //////////////////////////////////////////////////////////////////////////////////////
 void SwingTurnLeft()
 {
 		nMotorEncoder[motorRight] = 0;
 		nMotorEncoder[motorLeft] = 0;
 
-		nMotorEncoderTarget[motorRight] = 2000;//USED IN TWO SPOTS
+		nMotorEncoderTarget[motorRight] = 2000;
 		nMotorEncoderTarget[motorLeft] = 2000;
 
 		motor[motorRight] = 50;
@@ -143,8 +142,39 @@ void SwingTurnRight()
 		nMotorEncoderTarget[motorRight] = 2000;
 		nMotorEncoderTarget[motorLeft] = 2000;
 
-		motor[motorRight] = -60;
-		motor[motorLeft] = 60;
+		motor[motorRight] = -45;
+		motor[motorLeft] = 45;
+
+		while(nMotorRunState[motorRight] != runStateIdle || nMotorRunState[motorLeft] != runStateIdle)
+		{
+		}
+
+		motor[motorRight] = 0;
+		motor[motorLeft] = 0;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////////
+// SwingTurnRight
+//////////////////////////////////////////////////////////////////////////////////////
+void SwingTurnRight2(int correctionValue)
+{
+		nMotorEncoder[motorRight] = 0;
+		nMotorEncoder[motorLeft] = 0;
+
+		if(correctionValue == 1)
+		{
+			nMotorEncoderTarget[motorRight] = 2000;
+			nMotorEncoderTarget[motorLeft] = 2000;
+		}
+		else
+		{
+			nMotorEncoderTarget[motorRight] = 2200;
+			nMotorEncoderTarget[motorLeft] = 2200;
+		}
+
+		motor[motorRight] = -45;
+		motor[motorLeft] = 45;
 
 		while(nMotorRunState[motorRight] != runStateIdle || nMotorRunState[motorLeft] != runStateIdle)
 		{
@@ -159,16 +189,16 @@ void SwingTurnRight()
 // SwingTurnLeftRamp
 //
 //////////////////////////////////////////////////////////////////////////////////////
-void SwingTurnLeftRamp()
+void SwingTurnRightRamp()
 {
 		nMotorEncoder[motorRight] = 0;
 		nMotorEncoder[motorLeft] = 0;
 
-		nMotorEncoderTarget[motorRight] = 2300;
-		nMotorEncoderTarget[motorLeft] = 2300;
+		nMotorEncoderTarget[motorRight] = 1450;
+		nMotorEncoderTarget[motorLeft] = 1450;
 
-		motor[motorRight] = 30;
-		motor[motorLeft] = -30;
+		motor[motorRight] = -50;
+		motor[motorLeft] = 50;
 
 		while(nMotorRunState[motorRight] != runStateIdle || nMotorRunState[motorLeft] != runStateIdle)
 		{
@@ -202,9 +232,10 @@ void initializeRobot()
 	HTIRS2setDSPMode(IRSensor, _mode);
 
 	//block drop servo motor position
-	//servo[servoClaw] = 10;
-	wait1Msec(1000);
+	servo[servoScoop] = 0;
+	motor[motorHang] = 0;
 	return;
+
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
@@ -263,26 +294,31 @@ int  MoveUntilIR()
 //
 //////////////////////////////////////////////////////////////////////////////////////
 //Drop Block NEW
-void DropBlock()
+void DropBlock(int correctionValue)
 {
-	Move(7, FORWARD, 35);
-	wait1Msec(10);
+	Move(6, FORWARD, 45);
+	wait10Msec(10);
 
 	SwingTurnLeft();
-	wait1Msec(5);
+	if(correctionValue == 1)
+		Move(5, BACKWARD, 45);
+	else
+		Move(3, BACKWARD, 45);
 
-	Move(3, BACKWARD, 35);
-
-	motor[motorArm] = 40;
+	motor[motorArm] = 45;
 	wait10Msec(75);
 
 	servo[servoScoop] = 100;
 
-	motor[motorArm] = 40;
-	wait10Msec(243);
+	motor[motorArm] = 45;
+	wait10Msec(205);
+
+	servo[servoScoop] = 110;
+	motor[motorArm] = 45;
+	wait10Msec(20);
 	motor[motorArm] = 0;
 
-	Move(7, FORWARD, 35);
+	Move(8, FORWARD, 35);
 	wait1Msec(10);
 
 	servo[servoScoop] = 255;
@@ -292,6 +328,24 @@ void DropBlock()
 }
 
 
+task RaiseRack()
+{
+ 		nMotorEncoder[motorHang] = 0;
+		nMotorEncoderTarget[motorHang] = 2000;
+		motor[motorHang] = 50;
+		while( (nMotorRunState[motorHang] != runStateIdle)
+		{
+		}
+		motor[motorHang] = 0;
+}
+
+task Arm()
+{
+  motor[motorArm] = 30;
+  wait1Msec(1000);
+  motor[motorArm] = 0;
+
+}
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //                                         Main Task
@@ -316,8 +370,7 @@ task main()
   initializeRobot();
 
 
-
-  //waitForStart(); // Wait for the beginning of autonomous phase.
+  waitForStart(); // Wait for the beginning of autonomous phase.
 
 	///////////////////////////////////////////////////////
   //
@@ -325,11 +378,12 @@ task main()
   //
   ///////////////////////////////////////////////////////
 
+  StartTask(RaiseRack);
+	StartTask(Arm);
+
+	wait10Msec(1); //wait a little for the threads to start
+
   //Coast the motors
-  servo[servoScoop] = 0;
-  motor[motorArm] = 30;
-  wait1Msec(1000);
-  motor[motorArm] = 0;
  	bFloatDuringInactiveMotorPWM = true;
 
  	///////////////////////////////////////////////////////
@@ -347,11 +401,14 @@ task main()
   //Its about time we drop the block in the basket
   //
   ///////////////////////////////////////////////////////
-  DropBlock();
+  if(currentTicks > BASKET_ZONE3_MAX )
+  	DropBlock(1);
+ 	else
+  	DropBlock(0);
 
   ////////////////////////////////////////////////////////
   //
-  //okay, Now what?! Backup from basket
+  //okay, Now what?, return back where the robot started!
   //
   ///////////////////////////////////////////////////////
   SwingTurnRight();
@@ -366,8 +423,8 @@ task main()
 
   nMotorEncoder[motorLeft] = 0;
   nMotorEncoder[motorRight]= 0;
-  nMotorEncoderTarget[motorLeft] =  (currentTicks * -1)  + 1000;
-  nMotorEncoderTarget[motorRight] =  (currentTicks * -1) + 1000;
+  nMotorEncoderTarget[motorLeft] =  (currentTicks * -1)  + 650; //dont go to the start position, start a bit before, so that wall will not be touched
+  nMotorEncoderTarget[motorRight] =  (currentTicks * -1) + 650; //dont go to the start position, start a bit before, so that wall will not be touched
 
   motor[motorLeft] = -60;
   motor[motorRight] = -60;
@@ -378,29 +435,37 @@ task main()
   motor[motorRight] = 0;
   wait10Msec(10);
 
+
   ///////////////////////////////////////////////////////
   //
 	// Final Step, We are almost there, Climb the ramp
   //
   ///////////////////////////////////////////////////////
 
-	//turnleft towards the ramp
-	SwingTurnLeftRamp();
+	//turnright towards the ramp
+	SwingTurnRightRamp();
 	wait10Msec(10);
 
-	//Find the Blue or RED line
-	Move(48, FORWARD, 60);
+	Move(32, BACKWARD, 60);
 	wait10Msec(10);
 
 	//postion towards the ramp
-	SwingTurnLeft();
+
+	if(currentTicks > BASKET_ZONE3_MAX )
+		SwingTurnRight2(1);
+	else
+		SwingTurnRight2(0);
+
 	wait10Msec(10);
 
 	//brakes so that robot does not slide down ramp
 	bFloatDuringInactiveMotorPWM = false;
 
 	//climb the ramp
-	Move(25,BACKWARD,60);
+	if(currentTicks < BASKET_ZONE3_MAX)
+		Move(47,BACKWARD,60);
+	else
+		Move(40, BACKWARD, 60);
 
 	///////////////////////////////////////////////////////
   //

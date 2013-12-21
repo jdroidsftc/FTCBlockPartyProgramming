@@ -58,7 +58,9 @@ task main()
 	while(true)
 	{
 		servo[servoScoop]  = 0;
+
 		getJoystickSettings(joystick);
+
 		if(joy1Btn(4) == 1)
 			ArmUp();
 		else if(joy1Btn(2) == 1)
@@ -72,9 +74,12 @@ task main()
 			motor[motorHang] = 0;
 			motor[motorArm] = 0;
 		}
+
+
 		//uncomment the piece that you want tested.
 		//servo[servoScoop]  = 100;
 		//ArmUp();
+		//servo[servoScoop]  = 0;
 		//ArmDown();
 		//RackUp();
 		//RackDown();

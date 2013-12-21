@@ -40,35 +40,49 @@
 //
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+//number of ticks the rack has to move so that
+//hook is over the bar during pull up
 const int MAX_ENCODER_HANG = 27800;
+
+//global variable to keep track of rack movement up and down,
+//so that we stop at the exactly above the bar
+int currentRackTicks= 0;
+
 
 void initializeRobot()
 {
-	// Place code here to sinitialize servos to starting positions.
+	//initialize the scoop to vertical position
 	servo[servoScoop] = 0;
   return;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-// Raise the Rack Task
-// raise the rack nased on the predefined encoder value.
-// left and right bumper stops the rack from climbing up or down.
+// Task: Rack
+// Allows for Rack to move up and down, runs parallely along with the drive and other tasks
+// Raise the Rack based on the predefined encoder value.
+// TopHat 0: Moves Rack Up; TopHat 4: Moves Rack Down
+// Releasing TopHat will stop the Rack movement
+// Left and Right bumper stops the Rack from climbing up or down.
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 task Rack()
 {
 	while(true)
 	{
+		int RackTicks;
 		getJoystickSettings(joystick);
 		if (joystick.joy2_TopHat == 0 )//up
 		{
 			nMotorEncoder[motorHang] = 0;
-			nMotorEncoderTarget[motorHang] = MAX_ENCODER_HANG;
+			nMotorEncoderTarget[motorHang] = MAX_ENCODER_HANG - currentRackTicks;
 			motor[motorHang] = 50;
 			while( (nMotorRunState[motorHang] != runStateIdle) && (joy2Btn(6) != 1)  && (joy2Btn(5) != 1) ) //Right/left bumper is an emergency stop
 			{
+				RackTicks = nMotorEncoder[motorHang];
 			}
 			motor[motorHang] = 0;
-		}
+			currentRackTicks = currentRackTicks + RackTicks;
+		} // if
 		else if(joystick.joy2_TopHat == 4 ) //down
 	  {
 	  	nMotorEncoder[motorHang] = 0;
@@ -76,11 +90,23 @@ task Rack()
 			motor[motorHang] = -50;
 			while((nMotorRunState[motorHang] != runStateIdle) && (joy2Btn(6) != 1)  && (joy2Btn(5) != 1) ) //Right/left bumper is an emergency stop
 			{
+				RackTicks = nMotorEncoder[motorHang];
 			}
 			motor[motorHang] = 0;
-	  }
-	}
-}
+
+			currentRackTicks = currentRackTicks + RackTicks;
+	  } // else
+	  else
+	  	motor[motorHang] = 0;
+
+	 // debugging purposes
+	 // string sTemp;
+	 // sprintf(sTemp, "%d", currentRackTicks);
+	 // nxtDisplayString(2, sTemp);
+
+	} //while true
+
+}//Rack Task
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 // scale for the drive motors
@@ -103,9 +129,9 @@ int ScaleForMotor(int joyValue)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-// Arm Task
-// starts when the program starts
-// allows for the arm to be controlled along with driving
+// Task: Arm
+// Allows for Arm to move up and down
+// Joystick 2 - controls the moveement up and down
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 task Arm()
 {
@@ -117,10 +143,9 @@ task Arm()
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-// Scoop Task
+// Task: Scoop
 // Allows for the scoop to be controlled parallely,
-// independent of teh arm and drive controls
-// servo should scale from 0 to 255
+// servo should be scaled from 0 to 255
 // the value should be increased and decreased based on the joy stick value
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 task Scoop()
@@ -134,15 +159,18 @@ task Scoop()
 	{
 		getJoystickSettings(joystick);
 		int joyValue = joystick.joy2_y1;
+
 		if ( joyValue < MAX_DEAD_ZONE && joyValue > MIN_DEAD_ZONE)
+		{
 				servo[servoScoop] = ServoValue[servoScoop];
+		}
 		else
 		{
 			int direction = joyValue/abs(joyValue);
 			float ratio = ((joyValue * joyValue) / (MAX_JOY_VAL * MAX_JOY_VAL));
 			int Scaled = ratio * MAX_SERVOVAL * direction;
 
-			if(LastValue < Scaled )
+			if( LastValue < Scaled )
 			{
 				servo[servoScoop] = ServoValue[servoScoop]  - 2;
 			}
@@ -150,9 +178,12 @@ task Scoop()
 			{
 				servo[servoScoop] = ServoValue[servoScoop]  + 2;
 			}
-		}
-	}
-}
+
+		} // else
+
+	} // while true
+
+} // task end
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -203,18 +234,9 @@ task main()
 	//main thread for drive and flag
 	while (true)
 	{
-		///////////////////////////////////////////////////////////
-		///////////////////////////////////////////////////////////
-		////                                                   ////
-		////      JDROIDS TELE-OP CODE                         ////
-		////                                                   ////
-		///////////////////////////////////////////////////////////
-		///////////////////////////////////////////////////////////
-
 		bFloatDuringInactiveMotorPWM = true;
 
 		getJoystickSettings(joystick);
-
 
 		//drive controls
 		if ( joystick.joy1_TopHat == 0 ) //forward
@@ -270,22 +292,6 @@ task main()
 			motor[motorRight] = ScaleForMotor( joystick.joy1_y2 );
 		}
 
-
-
-/*		//worm gear arm control
-		if(joy2Btn(3) == 1) //B = up
-		{
-			motor[motorArm] = 40;
-		}
-		else if( joy2Btn(2) == 1) //A = down
-		{
-			motor[motorArm] = -40;
-		}
-		else
-		{
-			motor[motorArm] = 0;
-		}
-*/
 		//flag control
 		if  (joy2Btn(8) == 1) //right trigger spin
 		{
@@ -295,34 +301,7 @@ task main()
 		{
 			motor[motorFlag] = 0;
 		}
-/*
-		//servo scoop control
-		if(joy2Btn(1) == 1) //X - scoop up
-		{
-					servo[servoScoop] = ServoValue[servoScoop] + 2;
-		}
-		else if(joy2Btn(4) == 1) //Y - scoop down
-		{
-					servo[servoScoop] = ServoValue[servoScoop]  - 2;
-		}
 
-		//rack and pinion - hanging mechanism
-		else if (joystick.joy2_TopHat == 0 ) //up
-		{
-				//multi threaded task to raise the arm,should start raising as soong as the flag is done
-				StartTask(raiseRack);
-	  }
-	  else if (joystick.joy2_TopHat == 4 ) //down
-	  {
-	  		nMotorEncoder[motorHang] = 0;
-				nMotorEncoderTarget[motorHang] = -(MAX_ENCODER_HANG/2);
-				motor[motorHang] = -50;
-				while((nMotorRunState[motorHang] != runStateIdle) && (joy2Btn(6) != 1)  && (joy2Btn(5) != 1) ) //Right/left bumper is an emergency stop
-				{
-				}
-				motor[motorHang] = 0;
-	  }
-*/
 	} //while true
 
 } // main

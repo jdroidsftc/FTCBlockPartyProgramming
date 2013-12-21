@@ -1,15 +1,12 @@
 #pragma config(Hubs,  S1, HTMotor,  HTServo,  HTMotor,  HTMotor)
 #pragma config(Sensor, S3,     IRSensor,       sensorI2CCustom)
-#pragma config(Motor,  motorA,           ,             tmotorNXT, openLoop)
-#pragma config(Motor,  motorB,           ,             tmotorNXT, openLoop)
-#pragma config(Motor,  motorC,           ,             tmotorNXT, openLoop)
-#pragma config(Motor,  mtr_S1_C1_1,     motorHang,     tmotorTetrix, PIDControl, reversed, encoder)
+#pragma config(Motor,  mtr_S1_C1_1,     motorHang,     tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S1_C1_2,     motorArm,      tmotorTetrix, openLoop)
-#pragma config(Motor,  mtr_S1_C3_1,     motorLeft,     tmotorTetrix, PIDControl, encoder)
-#pragma config(Motor,  mtr_S1_C3_2,     motorRight,    tmotorTetrix, PIDControl, reversed, encoder)
+#pragma config(Motor,  mtr_S1_C3_1,     motorLeft,     tmotorTetrix, openLoop)
+#pragma config(Motor,  mtr_S1_C3_2,     motorRight,    tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S1_C4_1,     motorFlag,     tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S1_C4_2,     motorI,        tmotorTetrix, openLoop)
-#pragma config(Servo,  srvo_S1_C2_1,    servo1,               tServoNone)
+#pragma config(Servo,  srvo_S1_C2_1,    servoScoop,           tServoStandard)
 #pragma config(Servo,  srvo_S1_C2_2,    servo2,               tServoNone)
 #pragma config(Servo,  srvo_S1_C2_3,    servo3,               tServoNone)
 #pragma config(Servo,  srvo_S1_C2_4,    servo4,               tServoNone)
@@ -43,31 +40,60 @@ const int WHEEL_DIAMETER = 4;  			// current wheel diameter = 4 inches
 const float PI = 3.14159265359;
 
 //should find the fourth basket within 45 inches from the start position
-const int BASKET_ZONE4_MAX  = (ONE_REVOLUTION/(PI * WHEEL_DIAMETER)) * 45 ;
-
+const int BASKET_ZONE4_MAX  = (ONE_REVOLUTION/(PI * WHEEL_DIAMETER)) * 50 ;
+const int BASKET_ZONE3_MAX = ONE_REVOLUTION/(PI * WHEEL_DIAMETER)) * 45;
 
 #include "JoystickDriver.c"  							//Include file to "handle" the Bluetooth messages.
 #include "Drivers/Common.h"
 #include "Drivers/hitechnic-colour-v2.h"
 #include "Drivers/hitechnic-irseeker-v2.h"
-#include "JDroidsHelperFunctions.c"				//Include file to "handle" Move/IR common functions for autonomous run.
+#include "JDroidsHelperFunctions.c"				//Include file to "handle" JDroids functions.
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////
 //
-// TurnLeft
-//      Function used to turn with the back wheel facing the ramp after sensing the blue/red color
+// TurnRight Backwards
 //
-/////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+void TurnRight()
+{
+		nMotorEncoder[motorRight] = 0;
+		nMotorEncoder[motorLeft] = 0;
+
+		nMotorEncoderTarget[motorRight] = 0;
+		nMotorEncoderTarget[motorLeft] = 2800;
+
+		motor[motorRight] = 0;
+		motor[motorLeft] = 60;
+
+		while(nMotorRunState[motorLeft] != runStateIdle)
+		{
+		}
+
+		motor[motorRight] = 0;
+		motor[motorLeft] = 0;
+
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// TurnRight Backwards
+//
+//////////////////////////////////////////////////////////////////////////////////////
 void TurnLeft()
 {
 		nMotorEncoder[motorRight] = 0;
 		nMotorEncoder[motorLeft] = 0;
 
-		nMotorEncoderTarget[motorRight] = 3400;
-		nMotorEncoderTarget[motorLeft] = 0;
+		nMotorEncoderTarget[motorRight] = 1800;
+		nMotorEncoderTarget[motorLeft] = 1800;
 
-		motor[motorRight] = -60;
-		motor[motorLeft] = 0;
+		motor[motorRight] = 30;
+		motor[motorLeft] = -30;
 
 		while(nMotorRunState[motorRight] != runStateIdle)
 		{
@@ -75,26 +101,27 @@ void TurnLeft()
 
 		motor[motorRight] = 0;
 		motor[motorLeft] = 0;
-}
 
+}
 
 
 //////////////////////////////////////////////////////////////////////////////////////
 //
 // SwingTurnLeft
-// 		Function used to turn towards the basket after detection IR beam
-//
+// Used in two places
+// 	1. when turned towards the basket
+//  2. when turned towards the ramp
 //////////////////////////////////////////////////////////////////////////////////////
 void SwingTurnLeft()
 {
 		nMotorEncoder[motorRight] = 0;
 		nMotorEncoder[motorLeft] = 0;
 
-		nMotorEncoderTarget[motorRight] = 2800;
-		nMotorEncoderTarget[motorLeft] = 2800;
+		nMotorEncoderTarget[motorRight] = 2000;
+		nMotorEncoderTarget[motorLeft] = 2000;
 
-		motor[motorRight] = 30;
-		motor[motorLeft] = -30;
+		motor[motorRight] = -50;
+		motor[motorLeft] = 50;
 
 		while(nMotorRunState[motorRight] != runStateIdle || nMotorRunState[motorLeft] != runStateIdle)
 		{
@@ -106,21 +133,18 @@ void SwingTurnLeft()
 
 
 //////////////////////////////////////////////////////////////////////////////////////
-//
 // SwingTurnRight
-//		Function used to turn near the basket to get back to the ramp
-//
 //////////////////////////////////////////////////////////////////////////////////////
 void SwingTurnRight()
 {
 		nMotorEncoder[motorRight] = 0;
 		nMotorEncoder[motorLeft] = 0;
 
-		nMotorEncoderTarget[motorRight] = 1400;
-		nMotorEncoderTarget[motorLeft] = 1400;
+		nMotorEncoderTarget[motorRight] = 2000;
+		nMotorEncoderTarget[motorLeft] = 2000;
 
-		motor[motorRight] = -30;
-		motor[motorLeft] = 30;
+		motor[motorRight] = -45;
+		motor[motorLeft] = 45;
 
 		while(nMotorRunState[motorRight] != runStateIdle || nMotorRunState[motorLeft] != runStateIdle)
 		{
@@ -132,22 +156,18 @@ void SwingTurnRight()
 
 
 //////////////////////////////////////////////////////////////////////////////////////
-//
-//
-// SwingTurnLeftRamp
-//		Function used to turn towards ramp, when close to the perimeter wall
-//
+// SwingTurnRight
 //////////////////////////////////////////////////////////////////////////////////////
-void SwingTurnLeftRamp()
+void SwingTurnRight2()
 {
 		nMotorEncoder[motorRight] = 0;
 		nMotorEncoder[motorLeft] = 0;
 
-		nMotorEncoderTarget[motorRight] = 2800;
-		nMotorEncoderTarget[motorLeft] = 2800;
+		nMotorEncoderTarget[motorRight] = 2000;
+		nMotorEncoderTarget[motorLeft] = 2000;
 
-		motor[motorRight] = 30;
-		motor[motorLeft] = -30;
+		motor[motorRight] = 45;
+		motor[motorLeft] = -45;
 
 		while(nMotorRunState[motorRight] != runStateIdle || nMotorRunState[motorLeft] != runStateIdle)
 		{
@@ -157,40 +177,57 @@ void SwingTurnLeftRamp()
 		motor[motorLeft] = 0;
 }
 
-//Drop Block NEW
-void DropBlock()
+//////////////////////////////////////////////////////////////////////////////////////
+//
+// SwingTurnLeftRamp
+//
+//////////////////////////////////////////////////////////////////////////////////////
+void SwingTurnRightRamp()
 {
-	SwingTurnLeft();
-	wait1Msec(10);
-	Move(6, BACKWARD, 35);
-	wait1Msec(10);
-	motor[motorArm] = 30;
-	wait10Msec(200);
-	servo[servoClaw] = 110;
-	servo[servoClaw] = 5;
-	Move(2, FORWARD, 35);
+		nMotorEncoder[motorRight] = 0;
+		nMotorEncoder[motorLeft] = 0;
+
+		nMotorEncoderTarget[motorRight] = 1450;
+		nMotorEncoderTarget[motorLeft] = 1450;
+
+		motor[motorRight] = 50;
+		motor[motorLeft] = -50;
+
+		while(nMotorRunState[motorRight] != runStateIdle || nMotorRunState[motorLeft] != runStateIdle)
+		{
+		}
+
+		motor[motorRight] = 0;
+		motor[motorLeft] = 0;
 }
 
 
-/*
-//Drop Block
-void DropBlock()
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//                                    initializeRobot
+//
+//
+//   1. Move motors and servos to a preset position.
+//   2. Some sensor types take a short while to reach stable values during which time it is best that
+//      robot is not moving.
+//
+//
+//
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+void initializeRobot()
 {
-	  //Move(4,BACKWARD, 20);
-    //wait1Msec(10);
-  //Swing Turn into the Basket, to position the robot for dropping the block
-    SwingTurnLeft();
-	  wait1Msec(10);
-	//Move closer to the robot
-	  Move(6,BACKWARD, 35);
-	  wait1Msec(10);
-	//Drop the block, hopefully, into the basket
-	  //servo[servoClaw] = 110;
-	  wait1Msec(1000);
-	  //servo[servoClaw] = 5;
-	  Move(2,FORWARD,35);
+
+  // Place code here to initialize servos to starting positions.
+  // Sensors are automatically configured and setup by ROBOTC. They may need a brief time to stabilize.
+
+	//IR Mode set
+  tHTIRS2DSPMode _mode = DSP_1200;
+	HTIRS2setDSPMode(IRSensor, _mode);
+
+	//block drop servo motor position
+	servo[servoScoop] = 0;
+	return;
 }
-*/
 
 //////////////////////////////////////////////////////////////////////////////////////
 //
@@ -204,8 +241,8 @@ int  MoveUntilIR()
 	nMotorEncoder[motorLeft] = 0;
 
 	//2. Start the motors
-	motor[motorRight] = 35;
-	motor[motorLeft] = 35;
+	motor[motorRight] = 45;
+	motor[motorLeft] = 45;
 
 	//3. Set the variables to track the numbe of revolutions, so robot knows its position on the field
 	int currentTicks = 0;
@@ -242,32 +279,43 @@ int  MoveUntilIR()
 	return currentTicks;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
 //
-//                                    initializeRobot
+// Drop Block
 //
-//
-//   1. Move motors and servos to a preset position.
-//   2. Some sensor types take a short while to reach stable values during which time it is best that
-//      robot is not moving.
-//
-//
-//
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-void initializeRobot()
+//////////////////////////////////////////////////////////////////////////////////////
+//Drop Block NEW
+void DropBlock( int correctionValue)
 {
-
-  // Place code here to initialize servos to starting positions.
-  // Sensors are automatically configured and setup by ROBOTC. They may need a brief time to stabilize.
-
-	//IR Mode set
-  tHTIRS2DSPMode _mode = DSP_1200;
-	HTIRS2setDSPMode(IRSensor, _mode);
-
-	//block drop servo motor position
-	//servo[servoClaw] = 5;
+	Move(6, FORWARD, 45);
 	wait10Msec(10);
-	return;
+
+	SwingTurnLeft();
+	if(correctionValue == 1)
+		Move(5, BACKWARD, 45);
+	else
+		Move(3, BACKWARD, 45);
+
+	motor[motorArm] = 45;
+	wait10Msec(75);
+
+	servo[servoScoop] = 100;
+
+	motor[motorArm] = 45;
+	wait10Msec(205);
+
+	servo[servoScoop] = 110;
+	motor[motorArm] = 45;
+	wait10Msec(20);
+	motor[motorArm] = 0;
+
+	Move(8, FORWARD, 35);
+	wait1Msec(10);
+
+	servo[servoScoop] = 255;
+	wait10Msec(125);
+
+	servo[servoScoop] = 0;
 }
 
 
@@ -290,26 +338,24 @@ void initializeRobot()
 
 task main()
 {
+
+
   initializeRobot();
 
-  //waitForStart(); // Wait for the beginning of autonomous phase.
+
+
+  waitForStart(); // Wait for the beginning of autonomous phase.
 
 	///////////////////////////////////////////////////////
   //
-  // Start of JDroids Autonomous Code
-  // 1. Detect IR
-  // 2. DropBlock
-  // 3. SwingTurnLeft
-  // 4. SwingTurnRight
-  // 5. Backup
-  // 6. SwingTurnLeftRamp
-	// 7. MoveUntilBlueorRed
-  // 8. TurnLeft
-  // 9. MoveForward into Ramp
+  //start of JDroids Autonomous Code
   //
   ///////////////////////////////////////////////////////
 
   //Coast the motors
+  motor[motorArm] = 30;
+  wait1Msec(1000);
+  motor[motorArm] = 0;
  	bFloatDuringInactiveMotorPWM = true;
 
  	///////////////////////////////////////////////////////
@@ -318,8 +364,8 @@ task main()
  	// returns the number of ticks moved
  	//
  	///////////////////////////////////////////////////////
- 	int currentTicks = MoveUntilIR();
-  wait10Msec(30);
+	int currentTicks = MoveUntilIR();
+  wait10Msec(10);
 
   ///////////////////////////////////////////////////////
   //
@@ -327,14 +373,17 @@ task main()
   //Its about time we drop the block in the basket
   //
   ///////////////////////////////////////////////////////
-  DropBlock();
+  if(currentTicks > BASKET_ZONE3_MAX)
+  	DropBlock(1);
+ else
+  	DropBlock(0);
 
-  ///////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////
   //
-  //okay, Now what?! Turn back to get back to ramp
+  //okay, Now what?, return back where the robot started!
   //
   ///////////////////////////////////////////////////////
-  SwingTurnRight();
+  SwingTurnLeft();
 
 
   ///////////////////////////////////////////////////////
@@ -346,17 +395,18 @@ task main()
 
   nMotorEncoder[motorLeft] = 0;
   nMotorEncoder[motorRight]= 0;
-  nMotorEncoderTarget[motorLeft] =  (currentTicks * -1) + 1000;
-  nMotorEncoderTarget[motorRight] =  (currentTicks * -1) + 1000;
+  nMotorEncoderTarget[motorLeft] =  (currentTicks)  - 650; //dont go to the start position, start a bit before, so that wall will not be touched
+  nMotorEncoderTarget[motorRight] =  (currentTicks) - 650; //dont go to the start position, start a bit before, so that wall will not be touched
 
-  motor[motorLeft] = -40;
-  motor[motorRight] = -40;
+  motor[motorLeft] = 60;
+  motor[motorRight] = 60;
   while ( nMotorRunState[motorLeft] != runStateIdle || nMotorRunState[motorRight] != runStateIdle)
   {
   }
   motor[motorLeft] = 0;
   motor[motorRight] = 0;
-  wait10Msec(20);
+  wait10Msec(10);
+
 
   ///////////////////////////////////////////////////////
   //
@@ -364,26 +414,22 @@ task main()
   //
   ///////////////////////////////////////////////////////
 
-	//turnleft towards the ramp
-	SwingTurnLeftRamp();
-	wait10Msec(20);
+	//turnright towards the ramp
+	SwingTurnRightRamp();
+	wait10Msec(10);
 
-	//Find the white line
-	MoveUntilBlueOrRed();
-
-	Move(2,BACKWARD,60);
-	wait10Msec(20);
+	Move(30, BACKWARD, 60);
+	wait10Msec(10);
 
 	//postion towards the ramp
-	TurnLeft();
-	wait10Msec(30);
+	SwingTurnRight2();
+	wait10Msec(10);
 
-	//brakes so that the robot does not slide down the ramp
+	//brakes so that robot does not slide down ramp
 	bFloatDuringInactiveMotorPWM = false;
 
 	//climb the ramp
-	Move(23,FORWARD,60);
-
+	Move(50,BACKWARD,60);
 	///////////////////////////////////////////////////////
   //
 	// We are done
@@ -392,7 +438,8 @@ task main()
 
   while (true)
 	{
-
+		motor[motorRight] = -3;
+		motor[motorLeft] = -3;
 	}
 
 }
