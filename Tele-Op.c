@@ -150,7 +150,7 @@ task Arm()
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 task Scoop()
 {
-	/*
+
 	const int MIN_DEAD_ZONE = -7;
 	const int MAX_DEAD_ZONE = 7;
 	const int MAX_SERVOVAL  = 255;
@@ -179,20 +179,18 @@ task Scoop()
 			{
 				servo[servoScoop] = ServoValue[servoScoop]  + 2;
 			}
-		*/
-
-		if(joy2Btn(1) == 1)  //pick up position
-		{
-			servo[servoScoop] = 180;
-		}
-
-		if(joy2Btn(1) == 1)  //drop position
-		{
-			servo[servoScoop] = 250;
-		}
 
 
-		} // else
+			//if(joy2Btn(1) == 1)  //pick up position
+			//{
+			//	servo[servoScoop] = 180;
+			//}
+
+			//if(joy2Btn(1) == 1)  //drop position
+			//{
+			//	servo[servoScoop] = 250;
+			//}
+		}//else
 
 	} // while true
 
@@ -308,7 +306,7 @@ task main()
 		//flag control
 		if  (joy2Btn(8) == 1) //right trigger spin
 		{
-			motor[motorFlag] = 50;
+			motor[motorFlag] = 65;
 		}
 		else if  (joy2Btn(7) == 1) //left trigger stop
 		{

@@ -56,7 +56,8 @@ void Move(int distance, int direction, int power)
 		}
 
 		//5. check motor state to to keep running, if idle breaks out of while loop
-		while(nMotorRunState[motorRight] != runStateIdle) {
+		while ( nMotorRunState[motorLeft] != runStateIdle || nMotorRunState[motorRight] != runStateIdle)
+		{
 			/* do nothing, the robot will keep moving,
 			   since the power to motors is not cut off */
 		}
@@ -64,7 +65,6 @@ void Move(int distance, int direction, int power)
 		//6. we are done moving the required distance, stop the motors
 		motor[motorRight] = 0;
 		motor[motorLeft] = 0;
-
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
