@@ -85,8 +85,8 @@ void SwingTurnLeft()
 		nMotorEncoder[motorRight] = 0;
 		nMotorEncoder[motorLeft] = 0;
 
-		nMotorEncoderTarget[motorRight] = 2000;
-		nMotorEncoderTarget[motorLeft] = 2000;
+		nMotorEncoderTarget[motorRight] = 2050;
+		nMotorEncoderTarget[motorLeft] = 2050;
 
 		motor[motorRight] = 50;
 		motor[motorLeft] = -50;
@@ -266,30 +266,26 @@ void DropBlock()
 
 	Move(3, BACKWARD, 45);
 
-	servo[servoScoop] = 50;
-
-	motor[motorArm] = 45;
-	wait10Msec(75);
-
-	servo[servoScoop] = 105;
-
-	motor[motorArm] = 45;
-	wait10Msec(180);
-
-	servo[servoScoop] = 135;
-
-	motor[motorArm] = 50;
-	wait10Msec(25);
+	motor[motorArm] = 70;
+	wait10Msec(230);
 
 	motor[motorArm] = 0;
 
-	Move(9, FORWARD, 35);
+	Move(8, FORWARD, 35);
 	wait1Msec(10);
 
 	servo[servoScoop] = 255;
 	wait10Msec(125);
 
+	motor[motorArm] = -65;
+	wait1Msec(200);
+	motor[motorArm] = 0;
+
 	servo[servoScoop] = 0;
+
+	motor[motorArm] = 65;
+	wait1Msec(200);
+	motor[motorArm] = 0;
 }
 
 
@@ -352,7 +348,7 @@ task main()
   DropBlock();
 
   //back away from the basket
- 	Move(2, BACKWARD, 35);
+ Move(2, BACKWARD, 35);
 
 	// turn back
   SwingTurnRight();
