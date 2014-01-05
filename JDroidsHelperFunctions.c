@@ -36,7 +36,9 @@ void Move(int distance, int direction, int power)
 {
 	  //1. determine the number of ticks based on diameter and distance to travel
 		int numberOfTicks = (ONE_REVOLUTION/(PI * WHEEL_DIAMETER)) * distance;
-
+		int currentTicksRight = 0;
+		int currentTicksLeft = 0;
+		string sTemp;
 		//2. rest the encoder
 		nMotorEncoder[motorRight] = 0;
 		nMotorEncoder[motorLeft] = 0;
@@ -48,7 +50,7 @@ void Move(int distance, int direction, int power)
 		//4. set the power based on direction forward or backward
 		if(direction == FORWARD){
 			motor[motorRight] = power;
-			motor[motorLeft] = power;
+			motor[motorLeft] = power + 15;
 		}
 		else{
 			motor[motorRight] = power * -1;
@@ -58,18 +60,29 @@ void Move(int distance, int direction, int power)
 		//5. check motor state to to keep running, if idle breaks out of while loop
 		while ( nMotorRunState[motorLeft] != runStateIdle || nMotorRunState[motorRight] != runStateIdle)
 		{
-			/* do nothing, the robot will keep moving,
+			currentTicksRight = nMotorEncoder[motorRight];
+			currentTicksLeft = nMotorEncoder[motorLeft];
+			sprintf(sTemp, "%d", currentTicksRight);
+			nxtDisplayString(1, sTemp);
+			sprintf(sTemp, "%d", currentTicksLeft);
+			nxtDisplayString(3, sTemp);
+					/* do nothing, the robot will keep moving,
 			   since the power to motors is not cut off */
 		}
 
 		//6. we are done moving the required distance, stop the motors
-		motor[motorRight] = 0;
-		motor[motorLeft] = 0;
+
+	motor[motorRight] = 0;
+	motor[motorLeft] = 0;
+		sprintf(sTemp, "%d", currentTicksRight);
+			nxtDisplayString(1, sTemp);
+			sprintf(sTemp, "%d", currentTicksLeft);
+			nxtDisplayString(3, sTemp);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
 //
-// MoveUntilBlue
+// MoveUntilBlueOrRed - Not Used now
 //	 Color Sensor connected on port 2
 //////////////////////////////////////////////////////////////////////////////////////
 void MoveUntilBlueOrRed()

@@ -18,6 +18,27 @@
 
 #include "JoystickDriver.c"
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+// scale for the drive motors
+// the joy stick value should be scaled from 0 to maximum motor value
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+int ScaleForMotor(int joyValue)
+{
+	const int MIN_DEAD_ZONE = -7;
+	const int MAX_DEAD_ZONE = 7;
+	const int MAX_MOTOR_VAL = 70;
+	const float MAX_JOY_VAL = 127;
+
+	if ( joyValue < MAX_DEAD_ZONE && joyValue > MIN_DEAD_ZONE)
+		return 0;
+
+	int direction = joyValue/abs(joyValue);
+	float ratio = ((joyValue * joyValue) / (MAX_JOY_VAL * MAX_JOY_VAL));
+	int Scaled = ratio * MAX_MOTOR_VAL * direction;
+	return Scaled;
+}
+
+
 
 void ArmDown()
 {
@@ -53,49 +74,51 @@ void ServoFlat()
 	servo[servoScoop] = 100;
 }
 
-
-task main()
+task Arm()
 {
 	while(true)
 	{
-		servo[servoScoop]  = 0;
-
 		getJoystickSettings(joystick);
+		motor[motorArm] = ScaleForMotor(joystick.joy1_y2);
+	}
+}
+
+
+task main()
+{
+	servo[servoScoop]  = 0;
+
+  //multi tasking thread for arm
+	StartTask(Arm);
+
+	while(true)
+	{
+   	getJoystickSettings(joystick);
 
 		if(joy1Btn(4) == 1)
 			ArmUp();
 		else if(joy1Btn(2) == 1)
 			ArmDown();
-		else if (joystick.joy1_TopHat == 0)
+		if (joystick.joy1_TopHat == 0)
 			RackUp();
 		else if (joystick.joy1_TopHat == 4)
 			RackDown();
+		if(joy1Btn(1) == 1)
+			servo[servoScoop] = ServoValue[servoScoop]  + 2;
+		else
+			if(joy1Btn(3) == 1)
+			servo[servoScoop] = ServoValue[servoScoop]  - 1;
+		else
+			if ( joy1Btn(5) == 1)
+				servo[servoScoop] = 138;
+		else if ( joy1Btn(6) == 1 )
+			servo[servoScoop] = 255;
+		else if ( joy1Btn(7) == 1 )
+			servo[servoScoop] = 0;
 		else
 		{
 			motor[motorHang] = 0;
-			motor[motorArm] = 0;
 		}
-
-		//attempted to use continous rotation servo for flag
-		//if( joy1Btn(2) == 1 )
-		//	servo[servoFlag] = 256;
-		//else if( joy1Btn(1) == 1)
-		//	servo[servoFlag] = 127;
-
-
-
-
-		//uncomment the piece that you want tested.
-		//servo[servoScoop]  = 100;
-		//ArmUp();
-		//servo[servoScoop]  = 0;
-		//ArmDown();
-		//RackUp();
-		//RackDown();
-		//ServoStart();
-		//ServoFlat();
-		//servo[servoScoop] = 180;
-
 
 		//this is a test to see if the github works
 		//yes this works
