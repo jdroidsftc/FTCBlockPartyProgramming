@@ -5,7 +5,7 @@
 #pragma config(Motor,  mtr_S1_C1_1,     motorHang,     tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S1_C1_2,     motorArm,      tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S1_C3_1,     motorLeft,     tmotorTetrix, PIDControl, encoder)
-#pragma config(Motor,  mtr_S1_C3_2,     motorRight,    tmotorTetrix, openLoop, reversed)
+#pragma config(Motor,  mtr_S1_C3_2,     motorRight,    tmotorTetrix, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S1_C4_1,     motorFlag,     tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S1_C4_2,     motorI,        tmotorTetrix, openLoop)
 #pragma config(Servo,  srvo_S1_C2_1,    servoScoop,           tServoStandard)
@@ -38,7 +38,7 @@ const int WHEEL_DIAMETER = 4;  			// current wheel diameter = 4 inches
 const float PI = 3.14159265359;
 
 //should find the fourth basket within 45 inches from the start position
-const int BASKET_ZONE4_MAX  = (ONE_REVOLUTION/(PI * WHEEL_DIAMETER)) * 60 ;
+const int BASKET_ZONE4_MAX  = (ONE_REVOLUTION/(PI * WHEEL_DIAMETER)) * 62 ;
 
 #include "JoystickDriver.c"  							//Include file to "handle" the Bluetooth messages.
 #include "Drivers/Common.h"
@@ -67,8 +67,11 @@ void initializeRobot()
 	HTIRS2setDSPMode(IRSensor, _mode);
 
 	//scoop all the way up to hold the autonomous block
-	servo[servoScoop] = 0;
-	servo[servoIRDrop]= 175;
+	servo[servoScoop] = 185;
+	servo[servoIRDrop]= 28;
+	nMotorEncoder[motorRight] = 0;
+	nMotorEncoder[motorLeft] = 0;
+	wait1Msec(30);
 	return;
 }
 
@@ -88,7 +91,7 @@ void PointTurnRight(int Seconds)
 
 void DropBlockIR()
 {
-	servo[servoIRDrop]=75;
+	servo[servoIRDrop]=10;
 	wait1Msec(700);
 }
 
@@ -101,11 +104,13 @@ int  MoveUntilIR()
 {
 	//1. Reset the encoders
 	nMotorEncoder[motorLeft] = 0;
+	nMotorEncoder[motorRight] = 0;
+	wait1Msec(30);
 
 	//2. Start the motors, different speeds as motor has a bias
-	motor[motorRight] = 40;
-	wait1Msec(50);
-	motor[motorLeft] = 40;
+	motor[motorLeft] = 35;
+	motor[motorRight] = 35;
+
 
 	//3. Set the variables to track the numbe of revolutions, so robot knows its position on the field
 	int currentTicks = 0;
@@ -121,7 +126,7 @@ int  MoveUntilIR()
 		direction = HTIRS2readACDir(IRSensor);
 
 		// read the number of ticks - that is how far the robot has moved since it started
-		currentTicks = nMotorEncoder[motorLeft];
+		currentTicks = nMotorEncoder[motorRight];
 
 		// check to see if we are past the 4th basket
 		if (currentTicks >= BASKET_ZONE4_MAX )
@@ -133,13 +138,14 @@ int  MoveUntilIR()
 		//sprintf(sTemp, "%d", currentTicks);
 		//nxtDisplayString(2, sTemp);
 	}
-
 	//5. Stop moving
 	motor[motorRight] = 0;
 	motor[motorLeft] = 0;
 
+
 	//6. Return Ticks Moved
 	return currentTicks;
+
 }
 
 
@@ -170,30 +176,31 @@ void RaiseRack()
 task main()
 {
 
+
 	//initialize the servos
   initializeRobot();
+
 
   bFloatDuringInactiveMotorPWM = true;
 
 	// Wait for the beginning of autonomous phase.
   waitForStart();
 
-  servo[servoIRDrop]= 240;
 
 	//raise the rack so that the robot can move easily
   RaiseRack();
 
   //move the arm up so that the robot can move easily
   motor[motorArm] = 65;
-  wait1Msec(1000);
+  wait1Msec(300);
   motor[motorArm] = 0;
 
  	//detect the IR beam, we get out when 5 is detected
  	//returns the number of ticks moved
  	int currentTicks = MoveUntilIR();
 
- 	//move up a bit
- 	Move(6, FORWARD, 35);
+ 	//move up a small amount
+ 	Move(8, FORWARD, 35);
 	wait1Msec(30);
 
 	//drop the block
@@ -201,23 +208,23 @@ task main()
 
   //Bring the drop block mechanism higher,
  	//so that its not in the way of the center part of the beam
-  servo[servoIRDrop] = 255 ;
+  servo[servoIRDrop] = 28 ;
 	wait1Msec(70);
 
 	//backup
   //dont go to the start position, start a bit before, so that wall will not be touched
+  nMotorEncoder[motorRight] = 0;
   nMotorEncoder[motorLeft] = 0;
-  nMotorEncoderTarget[motorLeft] =  (currentTicks * -1)  + 550;
+  wait1Msec(30);
 
+  nMotorEncoderTarget[motorRight] =  (currentTicks * -1)  + 600;
+	nMotorEncoderTarget[motorLeft] =  (currentTicks * -1)  + 600;
   //power  the right motor earlier than the left motor
-  motor[motorRight] = -55;
-  wait1Msec(50);
-
-  //power the left motor
-  motor[motorLeft] = -55;
+  motor[motorRight] = -35;
+  motor[motorLeft] = -35;
 
   //wait for it go back
-  while ( nMotorRunState[motorLeft] != runStateIdle )
+  while ( nMotorRunState[motorRight] != runStateIdle || nMotorRunState[motorLeft] != runStateIdle  )
   {
   }
 
@@ -227,17 +234,17 @@ task main()
 	wait1Msec(50);
 
 	//turnright towards the ramp
-	PointTurnRight(1500);
+	PointTurnRight(1100);
 	wait1Msec(30);
 
 	//go back a bit for more clearance
-	Move(50, BACKWARD, 55);
+	Move(43, BACKWARD, 55);
 	wait1Msec(30);
 
-	PointTurnRight(1900);
+	PointTurnRight(1300);
 	wait1Msec(30);
 
-	Move(40, BACKWARD, 55);
+	Move(28, BACKWARD, 55);
 	wait1Msec(30);
 
 	//brake instead of coast
@@ -245,18 +252,14 @@ task main()
 
 	//check for other robots
 	if(SensorValue[sonarSensor] <= 75) //if obstruction is present, max power
-		Move(18, BACKWARD, 90);
+		Move(13, BACKWARD, 90);
 	else if(SensorValue[sonarSensor] > 75)
-		Move(18, BACKWARD, 60);
+		Move(13, BACKWARD, 60);
 
-	//bring it down so it is not in the way of the rack motor
-	servo[servoIRDrop] = 200;
-	wait1Msec(70);
 
 	// We are done
   while (true)
 	{
-
 	}
 
 }

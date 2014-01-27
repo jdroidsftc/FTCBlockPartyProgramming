@@ -1,13 +1,14 @@
 #pragma config(Hubs,  S1, HTMotor,  HTServo,  HTMotor,  HTMotor)
+#pragma config(Sensor, S1,     ,               sensorI2CMuxController)
 #pragma config(Sensor, S3,     IRSensor,       sensorI2CCustom)
-#pragma config(Motor,  mtr_S1_C1_1,     motorHang,     tmotorTetrix, PIDControl, reversed, encoder)
+#pragma config(Motor,  mtr_S1_C1_1,     motorHang,     tmotorTetrix, openLoop, reversed)
 #pragma config(Motor,  mtr_S1_C1_2,     motorArm,      tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S1_C3_1,     motorLeft,     tmotorTetrix, PIDControl, encoder)
 #pragma config(Motor,  mtr_S1_C3_2,     motorRight,    tmotorTetrix, PIDControl, reversed, encoder)
 #pragma config(Motor,  mtr_S1_C4_1,     motorFlag,     tmotorTetrix, openLoop)
 #pragma config(Motor,  mtr_S1_C4_2,     motorI,        tmotorTetrix, openLoop)
 #pragma config(Servo,  srvo_S1_C2_1,    servoScoop,           tServoStandard)
-#pragma config(Servo,  srvo_S1_C2_2,    servo2,               tServoNone)
+#pragma config(Servo,  srvo_S1_C2_2,    servoIRDrop,          tServoStandard)
 #pragma config(Servo,  srvo_S1_C2_3,    servo3,               tServoNone)
 #pragma config(Servo,  srvo_S1_C2_4,    servo4,               tServoNone)
 #pragma config(Servo,  srvo_S1_C2_5,    servo5,               tServoNone)
@@ -38,46 +39,43 @@ void Move(int distance, int direction, int power)
 		int numberOfTicks = (ONE_REVOLUTION/(PI * WHEEL_DIAMETER)) * distance;
 		int currentTicksRight = 0;
 		int currentTicksLeft = 0;
-		string sTemp;
+
 		//2. rest the encoder
 		nMotorEncoder[motorRight] = 0;
 		nMotorEncoder[motorLeft] = 0;
+		wait1Msec(30);
 
 		//3. set the target
 		nMotorEncoderTarget[motorRight] = numberOfTicks;
 		nMotorEncoderTarget[motorLeft] = numberOfTicks;
 
 		//4. set the power based on direction forward or backward
-		if(direction == FORWARD){
+		if( direction == FORWARD ) {
 			motor[motorRight] = power;
-			motor[motorLeft] = power + 15;
+			//wait1Msec(50);
+			motor[motorLeft] = power;
 		}
-		else{
+		else {
 			motor[motorRight] = power * -1;
+			//wait1Msec(50);
 			motor[motorLeft] = power * -1;
 		}
 
 		//5. check motor state to to keep running, if idle breaks out of while loop
-		while ( nMotorRunState[motorLeft] != runStateIdle || nMotorRunState[motorRight] != runStateIdle)
+		while ( nMotorRunState[motorRight] != runStateIdle || nMotorRunState[motorLeft] != runStateIdle)
 		{
-			currentTicksRight = nMotorEncoder[motorRight];
-			currentTicksLeft = nMotorEncoder[motorLeft];
-			sprintf(sTemp, "%d", currentTicksRight);
-			nxtDisplayString(1, sTemp);
-			sprintf(sTemp, "%d", currentTicksLeft);
-			nxtDisplayString(3, sTemp);
-					/* do nothing, the robot will keep moving,
-			   since the power to motors is not cut off */
+			currentTicksLeft = nMotorEncoder[motorRight];
+			//if ( numberOfTicks - abs(currentTicksLeft) < 635 )
+			//{
+			//	motor[motorLeft] = 0;
+			//}
+
 		}
 
 		//6. we are done moving the required distance, stop the motors
+		motor[motorRight] = 0;
+		motor[motorLeft] = 0;
 
-	motor[motorRight] = 0;
-	motor[motorLeft] = 0;
-		sprintf(sTemp, "%d", currentTicksRight);
-			nxtDisplayString(1, sTemp);
-			sprintf(sTemp, "%d", currentTicksLeft);
-			nxtDisplayString(3, sTemp);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////

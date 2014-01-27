@@ -1,4 +1,4 @@
-  #pragma config(Hubs,  S1, HTMotor,  HTServo,  HTMotor,  none)
+#pragma config(Hubs,  S1, HTMotor,  HTServo,  HTMotor,  none)
 #pragma config(Sensor, S1,     ,               sensorI2CMuxController)
 #pragma config(Sensor, S2,     colorSensor,    sensorI2CHiTechnicColor)
 #pragma config(Motor,  motorA,           ,             tmotorNXT, openLoop)
@@ -43,6 +43,7 @@ void ServoArm(int value)
 	servo[servoArm] = value;
 	wait1Msec(10);
 }
+
 
 
 
@@ -100,53 +101,17 @@ void PointTurnRight(int Seconds)
 
 task main()
 {
-	servo[servoScoop]  = 0;
-	wait1Msec(1000);
+	servo[servoScoop]  = 130;
+
 
 	servo[servoIRDrop]  = 28;
 
-	motor[motorRight] = 30;
-	motor[motorLeft] = 30;
-	wait1Msec(2000);
-	motor[motorRight] = 0;
-	motor[motorLeft] = 0;
-
-	//multi tasking thread for arm
-	StartTask(Arm);
-
-	while(true)
-	{
-   	getJoystickSettings(joystick);
-
-		if(joy1Btn(4) == 1)
-		{
-			servo[servoOuterScoop]  = 0;
+	servo[servoOuterScoop]  = 0;
 			wait1Msec(30);
-			servo[servoOuterScoop]  = 127;//stops the continuous servo
-		}
-		else if(joy1Btn(2) == 1)
-		{
-			servo[servoOuterScoop]  = 255;
-			wait1Msec(30);
-			servo[servoOuterScoop]  = 127;	//stops the continuous servo
-		}
-		if (joystick.joy1_TopHat == 0)
-			RackUp();
-		else if (joystick.joy1_TopHat == 4)
-			RackDown();
-		if ( joy1Btn(5) == 1)
-				servo[servoScoop] = 138;
-		else if ( joy1Btn(6) == 1 )
-			servo[servoScoop] = 255;
-		else if ( joy1Btn(7) == 1 )
-			servo[servoScoop] = 0;
-		else
-		{
-			motor[motorHang] = 0;
-		}
+			servo[servoOuterScoop]  = 127;
 
-		//this is a test to see if the github works
-		//yes this works
+	RackDown();
+	ArmDown();
+
+
 	}
-
-}
